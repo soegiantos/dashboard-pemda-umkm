@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Pemda — Aplikasi Introspeksi UMKM</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" integrity="sha384-uteMfOloLDGt042uDz+xHGF3ym63/WQ6rFq7murQRG8Ih7QrXGEGNtWd8688sb4O" crossorigin="anonymous"></script>
+<style>
+:root{--gold:#e3b959;--gold-soft:#f3d68a;--bg:#12100c;--surface:#1d1a14;--surface2:#26221a;--line:#3a3325;--ink:#f2ead8;--ink-soft:#c9bfa5;--ink-mut:#9a8f74;--ok:#7fc98a;--warn:#e0a35a}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.55;min-height:100vh}
+a{color:var(--gold)}
+.wrap{max-width:1060px;margin:0 auto;padding:18px 14px 60px}
+header.app-head{text-align:center;padding:26px 10px 8px}
+header.app-head h1{font-size:1.5rem;color:var(--gold);letter-spacing:.3px}
+header.app-head .sub{color:var(--ink-soft);font-size:.95rem;margin-top:6px}
+header.app-head .lab{color:var(--ink-mut);font-size:.85rem;margin-top:10px;line-height:1.5}
+.gold-rule{height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:16px auto 4px;max-width:520px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:14px}
+.card h2{font-size:1.15rem;color:var(--gold);margin-bottom:8px}
+.card h3{font-size:1rem;color:var(--gold-soft);margin:14px 0 6px}
+.card p{color:var(--ink-soft);font-size:.95rem}
+.muted{color:var(--ink-mut);font-size:.88rem}
+label{display:block;font-size:.92rem;color:var(--ink-soft);margin:12px 0 4px}
+input[type=email],input[type=password],input[type=text],select{width:100%;background:#14110c;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:11px 12px;font-size:1rem}
+input:focus,select:focus{outline:2px solid var(--gold);outline-offset:1px}
+button{cursor:pointer;font-size:1rem;border-radius:10px;padding:11px 18px;border:1px solid var(--gold);background:var(--gold);color:#1a1405;font-weight:600}
+button.ghost{background:transparent;color:var(--gold)}
+button.kecil{padding:7px 12px;font-size:.9rem}
+button:disabled{opacity:.55;cursor:default}
+.linkbtn{background:none;border:none;color:var(--gold);text-decoration:underline;padding:6px 2px;font-size:.95rem}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row>*{flex:1 1 auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:12px}
+.stat{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:14px}
+.stat .angka{font-size:1.55rem;font-weight:700;color:var(--gold);line-height:1.2}
+.stat .lbl{font-size:.88rem;color:var(--ink-soft);margin-top:4px}
+.bar-row{display:flex;align-items:center;gap:10px;margin:7px 0;font-size:.92rem}
+.bar-row .nm{width:190px;flex:0 0 190px;color:var(--ink-soft)}
+.bar-row .bar{flex:1;height:14px;background:#14110c;border-radius:7px;overflow:hidden}
+.bar-row .bar i{display:block;height:100%;background:var(--gold)}
+.bar-row .nil{width:64px;text-align:right;color:var(--ink)}
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:.92rem}
+th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}
+th{color:var(--gold);font-weight:600}
+td{color:var(--ink-soft)}
+nav.tabbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+nav.tabbar button{flex:1 1 150px;background:var(--surface);color:var(--ink-soft);border:1px solid var(--line);padding:11px 8px;font-size:.93rem}
+nav.tabbar button.aktif{background:var(--gold);color:#1a1405;border-color:var(--gold)}
+.layar{display:none}
+.layar.aktif{display:block}
+.wilayah-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.wilayah-bar>div{flex:1 1 200px}
+.belum-cukup{background:var(--surface2);border:1px dashed var(--gold);border-radius:12px;padding:18px;text-align:center;margin-top:14px}
+.belum-cukup p{color:var(--ink-soft)}
+.spanduk-contoh{background:#3a2f10;border:1px solid var(--gold);color:var(--gold-soft);border-radius:10px;padding:10px 14px;font-weight:700;text-align:center;margin-top:14px}
+.contoh-box{margin-top:12px}
+.contoh-box .card{border-color:var(--gold)}
+.peta-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:12px}
+.peta-sel{border-radius:12px;padding:14px;min-height:96px;border:1px solid var(--line)}
+.peta-sel .w{font-weight:700;color:#1a1405;font-size:.98rem}
+.peta-sel .d{color:#2c2305;font-size:.88rem;margin-top:4px}
+.peta-sel.kosong{background:var(--surface2)}
+.peta-sel.kosong .w{color:var(--ink-soft)}
+.peta-sel.kosong .d{color:var(--ink-mut)}
+.warn-box{background:var(--surface2);border:1px solid var(--warn);border-radius:12px;padding:14px;margin-top:14px}
+.warn-box p{color:var(--ink-soft)}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px}
+.topbar .siapa{color:var(--ink-soft);font-size:.9rem}
+.popup-overlay{position:fixed;inset:0;z-index:260;background:rgba(0,0,0,.74);display:none;align-items:center;justify-content:center;padding:20px 14px}
+.popup-overlay.show{display:flex}
+.popup-card{max-width:440px;width:100%;background:var(--surface);border:1.5px solid var(--gold);border-radius:16px;padding:22px;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.popup-card h3{font-size:1.18rem;color:var(--gold)}
+.popup-card p{margin-top:10px;color:var(--ink-soft);font-size:.97rem;line-height:1.55;white-space:pre-line}
+.popup-card .aksi{margin-top:16px;text-align:right}
+.footnote{margin-top:26px;text-align:center;color:var(--ink-mut);font-size:.83rem;line-height:1.6}
+.hidden{display:none!important}
+@media print{
+  body{background:#fff;color:#000}
+  .no-print{display:none!important}
+  .card,.stat{border-color:#999;background:#fff}
+  .card h2,.stat .angka{color:#8a6d1f}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="app-head">
+    <h1>Dashboard Pemda</h1>
+    <p class="sub">Aplikasi Introspeksi UMKM — ringkasan agregat wilayah untuk pemerintah daerah</p>
+    <div class="gold-rule"></div>
+    <p class="lab">Dr. Ir. Soegianto Soelistiono, M.Si.<br>Lab Sistem Cerdas Fisika, FST Universitas Airlangga</p>
+  </header>
+
+  <!-- ============ LAYAR MASUK ============ -->
+  <section id="layarMasuk">
+    <div class="card" id="panelMasuk">
+      <h2>Masuk Dashboard Pemda</h2>
+      <p>Dashboard ini hanya untuk dinas, pendamping, dan pemilik aplikasi. Data yang tampil di sini hanya angka agregat wilayah — jumlah, median, dan sebaran. Tidak ada data satu usaha pun yang dibuka.</p>
+      <label for="emailMasuk">Email</label>
+      <input type="email" id="emailMasuk" autocomplete="email" placeholder="nama@dinas.go.id">
+      <label for="sandiMasuk">Kata sandi</label>
+      <input type="password" id="sandiMasuk" autocomplete="current-password" placeholder="Kata sandi Anda">
+      <div class="row" style="margin-top:16px">
+        <button id="btnMasuk" type="button">Masuk</button>
+        <button id="btnKeDaftar" type="button" class="ghost">Daftar akun baru</button>
+      </div>
+      <p style="margin-top:12px"><button id="btnKeLupa" type="button" class="linkbtn">Lupa kata sandi?</button></p>
+      <p class="muted" style="margin-top:10px">Kata sandi ini khusus untuk aplikasi ini, bukan kata sandi email Anda.</p>
+    </div>
+
+    <div class="card hidden" id="panelDaftar">
+      <h2>Daftar akun baru</h2>
+      <p>Setelah mendaftar, buka email Anda dan ketuk tautan konfirmasi sebelum masuk pertama kali. Pendaftaran saja belum memberi akses: akun Anda harus didaftarkan dulu sebagai pengguna Dashboard Pemda oleh pemilik aplikasi.</p>
+      <label for="emailDaftar">Email</label>
+      <input type="email" id="emailDaftar" autocomplete="email" placeholder="nama@dinas.go.id">
+      <label for="sandiDaftar">Kata sandi (minimal 6 karakter)</label>
+      <input type="password" id="sandiDaftar" autocomplete="new-password" placeholder="Buat kata sandi">
+      <div class="row" style="margin-top:16px">
+        <button id="btnDaftar" type="button">Daftar</button>
+        <button id="btnBatalDaftar" type="button" class="ghost">Kembali masuk</button>
+      </div>
+      <p class="muted" style="margin-top:10px">Kata sandi ini khusus untuk aplikasi ini, bukan kata sandi email Anda.</p>
+    </div>
+
+    <div class="card hidden" id="panelLupa">
+      <h2>Lupa kata sandi?</h2>
+      <p>Masukkan email akun Anda. Kami akan mengirim tautan untuk membuat kata sandi baru.</p>
+      <label for="emailLupa">Email</label>
+      <input type="email" id="emailLupa" autocomplete="email" placeholder="nama@dinas.go.id">
+      <div class="row" style="margin-top:16px">
+        <button id="btnKirimLupa" type="button">Kirim tautan</button>
+        <button id="btnBatalLupa" type="button" class="ghost">Kembali masuk</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DASHBOARD ============ -->
+  <section id="layarDashboard" class="hidden">
+    <div class="topbar no-print">
+      <p class="siapa" id="infoPeran"></p>
+      <button id="btnKeluar" type="button" class="ghost kecil">Keluar</button>
+    </div>
+
+    <div class="card no-print">
+      <h2>Pilih wilayah</h2>
+      <div class="wilayah-bar">
+        <div>
+          <label for="selProvinsi">Provinsi</label>
+          <select id="selProvinsi"></select>
+        </div>
+        <div>
+          <label for="selKota">Kabupaten / kota</label>
+          <select id="selKota"></select>
+        </div>
+        <div style="flex:0 0 auto">
+          <button id="btnMuatWilayah" type="button">Tampilkan</button>
+        </div>
+      </div>
+      <p class="muted" id="infoWilayah" style="margin-top:10px"></p>
+    </div>
+
+    <nav class="tabbar no-print" id="tabbar">
+      <button type="button" data-layar="ringkasan" class="aktif">Ringkasan wilayah</button>
+      <button type="button" data-layar="tren">Tren pertumbuhan</button>
+      <button type="button" data-layar="peta">Peta kebutuhan</button>
+      <button type="button" data-layar="siap">Kelompok siap investasi</button>
+      <button type="button" data-layar="laporan">Laporan triwulan</button>
+    </nav>
+
+    <section class="layar aktif" id="layarRingkasan">
+      <div class="card">
+        <h2>Ringkasan wilayah</h2>
+        <p class="muted" id="ringkasanWilayahLabel"></p>
+        <div id="ringkasanIsi"><p class="muted">Pilih wilayah lalu ketuk "Tampilkan".</p></div>
+        <div id="contohRingkasan" class="contoh-box hidden"></div>
+      </div>
+    </section>
+
+    <section class="layar" id="layarTren">
+      <div class="card">
+        <h2>Tren pertumbuhan</h2>
+        <p>Pertumbuhan dibaca dari usaha yang sama, diukur berulang dengan rumus yang sama — bukan dari pendaftar baru.</p>
+        <p class="muted" id="trenWilayahLabel"></p>
+        <div id="trenIsi"><p class="muted">Pilih wilayah lalu ketuk "Tampilkan".</p></div>
+        <div id="contohTren" class="contoh-box hidden"></div>
+      </div>
+    </section>
+
+    <section class="layar" id="layarPeta">
+      <div class="card">
+        <h2>Peta kebutuhan</h2>
+        <p>Setiap wilayah punya kebutuhan dominan yang berbeda. Warna menunjukkan kebutuhan dominan, bukan nilai atau peringkat wilayah. Pilih satu wilayah untuk melihat tiga kebutuhan teratas beserta jumlah UMKM pada tiap kebutuhan.</p>
+        <p class="muted" id="petaWilayahLabel"></p>
+        <div id="petaIsi"><p class="muted">Pilih wilayah lalu ketuk "Tampilkan".</p></div>
+        <div id="petaTabel"></div>
+        <div class="row no-print" style="margin-top:12px">
+          <button id="btnMuatLebih" type="button" class="ghost kecil hidden">Muat lebih banyak</button>
+        </div>
+        <div id="contohPeta" class="contoh-box hidden"></div>
+      </div>
+    </section>
+
+    <section class="layar" id="layarSiap">
+      <div class="card">
+        <h2>Kelompok siap investasi</h2>
+        <p>Jumlah agregat usaha yang melewati ambang kesiapan investasi (Skor Siap Investasi 70 atau lebih). Tidak ada nama usaha yang ditampilkan di sini.</p>
+        <p class="muted" id="siapWilayahLabel"></p>
+        <div id="siapIsi"><p class="muted">Pilih wilayah lalu ketuk "Tampilkan".</p></div>
+        <div id="contohSiap" class="contoh-box hidden"></div>
+      </div>
+    </section>
+
+    <section class="layar" id="layarLaporan">
+      <div class="card">
+        <h2>Laporan triwulan</h2>
+        <p>Ringkasan untuk pimpinan: ringkasan wilayah, tren, kebutuhan dominan, dan kelompok siap investasi. Laporan ini bisa dicetak.</p>
+        <p class="muted" id="laporanWilayahLabel"></p>
+        <div id="laporanIsi"><p class="muted">Pilih wilayah lalu ketuk "Tampilkan".</p></div>
+        <div class="row no-print" style="margin-top:14px">
+          <button id="btnCetak" type="button">Cetak laporan</button>
+          <button id="btnContohLaporan" type="button" class="ghost">Lihat contoh</button>
+        </div>
+        <div id="contohLaporan" class="contoh-box hidden"></div>
+      </div>
+    </section>
+  </section>
+
+  <p class="footnote">Dashboard Pemda — Aplikasi Introspeksi UMKM<br>Dr. Ir. Soegianto Soelistiono, M.Si. — Lab Sistem Cerdas Fisika, FST Universitas Airlangga<br>Data tampil hanya sebagai agregat (jumlah, median, sebaran). Kelompok dengan jumlah usaha kurang dari 5 tidak ditampilkan.</p>
+</div>
+
+<!-- Popup ramah -->
+<div class="popup-overlay" id="popupOverlay" role="dialog" aria-modal="true" aria-labelledby="popupJudul">
+  <div class="popup-card">
+    <h3 id="popupJudul"></h3>
+    <p id="popupIsi"></p>
+    <div class="aksi"><button id="btnPopupTutup" type="button">Mengerti</button></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+var PEMDA_URL = "https://dashboard-pemda-umkm.vercel.app/";
+var EMAIL_PEMILIK = "soegianto@fst.unair.ac.id";
+var AMBANG = 5;
+var AMBANG_SIAP = 70;
+var SUPABASE_URL = "https://bdnqsxwypbrdiwaxydoh.supabase.co";
+var SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkbnFzeHd5cGJyZGl3YXh5ZG9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ1OTQ3NDUsImV4cCI6MjExMDE3MDc0NX0.MsdIzw-CAqJiBp3McXZ-6XLzLakmo0S5w7RhHHXMCQc";
+var WILAYAH = {"Aceh": ["Kabupaten Aceh Barat", "Kabupaten Aceh Barat Daya", "Kabupaten Aceh Besar", "Kabupaten Aceh Jaya", "Kabupaten Aceh Selatan", "Kabupaten Aceh Singkil", "Kabupaten Aceh Tamiang", "Kabupaten Aceh Tengah", "Kabupaten Aceh Tenggara", "Kabupaten Aceh Timur", "Kabupaten Aceh Utara", "Kabupaten Bener Meriah", "Kabupaten Bireuen", "Kabupaten Gayo Lues", "Kabupaten Nagan Raya", "Kabupaten Pidie", "Kabupaten Pidie Jaya", "Kabupaten Simeulue", "Kota Banda Aceh", "Kota Langsa", "Kota Lhokseumawe", "Kota Sabang", "Kota Subulussalam"], "Sumatera Utara": ["Kabupaten Asahan", "Kabupaten Batu Bara", "Kabupaten Dairi", "Kabupaten Deli Serdang", "Kabupaten Humbang Hasundutan", "Kabupaten Karo", "Kabupaten Labuhanbatu", "Kabupaten Labuhanbatu Selatan", "Kabupaten Labuhanbatu Utara", "Kabupaten Langkat", "Kabupaten Mandailing Natal", "Kabupaten Nias", "Kabupaten Nias Barat", "Kabupaten Nias Selatan", "Kabupaten Nias Utara", "Kabupaten Padang Lawas", "Kabupaten Padang Lawas Utara", "Kabupaten Pakpak Bharat", "Kabupaten Samosir", "Kabupaten Serdang Bedagai", "Kabupaten Simalungun", "Kabupaten Tapanuli Selatan", "Kabupaten Tapanuli Tengah", "Kabupaten Tapanuli Utara", "Kabupaten Toba", "Kota Binjai", "Kota Gunungsitoli", "Kota Medan", "Kota Padangsidimpuan", "Kota Pematangsiantar", "Kota Sibolga", "Kota Tanjungbalai", "Kota Tebing Tinggi"], "Sumatera Barat": ["Kabupaten Agam", "Kabupaten Dharmasraya", "Kabupaten Kepulauan Mentawai", "Kabupaten Lima Puluh Kota", "Kabupaten Padang Pariaman", "Kabupaten Pasaman", "Kabupaten Pasaman Barat", "Kabupaten Pesisir Selatan", "Kabupaten Sijunjung", "Kabupaten Solok", "Kabupaten Solok Selatan", "Kabupaten Tanah Datar", "Kota Bukittinggi", "Kota Padang", "Kota Padang Panjang", "Kota Pariaman", "Kota Payakumbuh", "Kota Sawahlunto", "Kota Solok"], "Riau": ["Kabupaten Bengkalis", "Kabupaten Indragiri Hilir", "Kabupaten Indragiri Hulu", "Kabupaten Kampar", "Kabupaten Kepulauan Meranti", "Kabupaten Kuantan Singingi", "Kabupaten Pelalawan", "Kabupaten Rokan Hilir", "Kabupaten Rokan Hulu", "Kabupaten Siak", "Kota Dumai", "Kota Pekanbaru"], "Jambi": ["Kabupaten Batanghari", "Kabupaten Bungo", "Kabupaten Kerinci", "Kabupaten Merangin", "Kabupaten Muaro Jambi", "Kabupaten Sarolangun", "Kabupaten Tanjung Jabung Barat", "Kabupaten Tanjung Jabung Timur", "Kabupaten Tebo", "Kota Jambi", "Kota Sungai Penuh"], "Sumatera Selatan": ["Kabupaten Banyuasin", "Kabupaten Empat Lawang", "Kabupaten Lahat", "Kabupaten Muara Enim", "Kabupaten Musi Banyuasin", "Kabupaten Musi Rawas", "Kabupaten Musi Rawas Utara", "Kabupaten Ogan Ilir", "Kabupaten Ogan Komering Ilir", "Kabupaten Ogan Komering Ulu", "Kabupaten Ogan Komering Ulu Selatan", "Kabupaten Ogan Komering Ulu Timur", "Kabupaten Penukal Abab Lematang Ilir", "Kota Lubuk Linggau", "Kota Pagaralam", "Kota Palembang", "Kota Prabumulih"], "Bengkulu": ["Kabupaten Bengkulu Selatan", "Kabupaten Bengkulu Tengah", "Kabupaten Bengkulu Utara", "Kabupaten Kaur", "Kabupaten Kepahiang", "Kabupaten Lebong", "Kabupaten Mukomuko", "Kabupaten Rejang Lebong", "Kabupaten Seluma", "Kota Bengkulu"], "Lampung": ["Kabupaten Lampung Barat", "Kabupaten Lampung Selatan", "Kabupaten Lampung Tengah", "Kabupaten Lampung Timur", "Kabupaten Lampung Utara", "Kabupaten Mesuji", "Kabupaten Pesawaran", "Kabupaten Pesisir Barat", "Kabupaten Pringsewu", "Kabupaten Tanggamus", "Kabupaten Tulang Bawang", "Kabupaten Tulang Bawang Barat", "Kabupaten Way Kanan", "Kota Bandar Lampung", "Kota Metro"], "Kepulauan Bangka Belitung": ["Kabupaten Bangka", "Kabupaten Bangka Barat", "Kabupaten Bangka Selatan", "Kabupaten Bangka Tengah", "Kabupaten Belitung", "Kabupaten Belitung Timur", "Kota Pangkalpinang"], "Kepulauan Riau": ["Kabupaten Bintan", "Kabupaten Karimun", "Kabupaten Kepulauan Anambas", "Kabupaten Lingga", "Kabupaten Natuna", "Kota Batam", "Kota Tanjungpinang"], "DKI Jakarta": ["Kabupaten Administrasi Kepulauan Seribu", "Kota Administrasi Jakarta Barat", "Kota Administrasi Jakarta Pusat", "Kota Administrasi Jakarta Selatan", "Kota Administrasi Jakarta Timur", "Kota Administrasi Jakarta Utara"], "Jawa Barat": ["Kabupaten Bandung", "Kabupaten Bandung Barat", "Kabupaten Bekasi", "Kabupaten Bogor", "Kabupaten Ciamis", "Kabupaten Cianjur", "Kabupaten Cirebon", "Kabupaten Garut", "Kabupaten Indramayu", "Kabupaten Karawang", "Kabupaten Kuningan", "Kabupaten Majalengka", "Kabupaten Pangandaran", "Kabupaten Purwakarta", "Kabupaten Subang", "Kabupaten Sukabumi", "Kabupaten Sumedang", "Kabupaten Tasikmalaya", "Kota Bandung", "Kota Banjar", "Kota Bekasi", "Kota Bogor", "Kota Cimahi", "Kota Cirebon", "Kota Depok", "Kota Sukabumi", "Kota Tasikmalaya"], "Jawa Tengah": ["Kabupaten Banjarnegara", "Kabupaten Banyumas", "Kabupaten Batang", "Kabupaten Blora", "Kabupaten Boyolali", "Kabupaten Brebes", "Kabupaten Cilacap", "Kabupaten Demak", "Kabupaten Grobogan", "Kabupaten Jepara", "Kabupaten Karanganyar", "Kabupaten Kebumen", "Kabupaten Kendal", "Kabupaten Klaten", "Kabupaten Kudus", "Kabupaten Magelang", "Kabupaten Pati", "Kabupaten Pekalongan", "Kabupaten Pemalang", "Kabupaten Purbalingga", "Kabupaten Purworejo", "Kabupaten Rembang", "Kabupaten Semarang", "Kabupaten Sragen", "Kabupaten Sukoharjo", "Kabupaten Tegal", "Kabupaten Temanggung", "Kabupaten Wonogiri", "Kabupaten Wonosobo", "Kota Magelang", "Kota Pekalongan", "Kota Salatiga", "Kota Semarang", "Kota Surakarta", "Kota Tegal"], "DI Yogyakarta": ["Kabupaten Bantul", "Kabupaten Gunungkidul", "Kabupaten Kulon Progo", "Kabupaten Sleman", "Kota Yogyakarta"], "Jawa Timur": ["Kabupaten Bangkalan", "Kabupaten Banyuwangi", "Kabupaten Blitar", "Kabupaten Bojonegoro", "Kabupaten Bondowoso", "Kabupaten Gresik", "Kabupaten Jember", "Kabupaten Jombang", "Kabupaten Kediri", "Kabupaten Lamongan", "Kabupaten Lumajang", "Kabupaten Madiun", "Kabupaten Magetan", "Kabupaten Malang", "Kabupaten Mojokerto", "Kabupaten Nganjuk", "Kabupaten Ngawi", "Kabupaten Pacitan", "Kabupaten Pamekasan", "Kabupaten Pasuruan", "Kabupaten Ponorogo", "Kabupaten Probolinggo", "Kabupaten Sampang", "Kabupaten Sidoarjo", "Kabupaten Situbondo", "Kabupaten Sumenep", "Kabupaten Trenggalek", "Kabupaten Tuban", "Kabupaten Tulungagung", "Kota Batu", "Kota Blitar", "Kota Kediri", "Kota Madiun", "Kota Malang", "Kota Mojokerto", "Kota Pasuruan", "Kota Probolinggo", "Kota Surabaya"], "Banten": ["Kabupaten Lebak", "Kabupaten Pandeglang", "Kabupaten Serang", "Kabupaten Tangerang", "Kota Cilegon", "Kota Serang", "Kota Tangerang", "Kota Tangerang Selatan"], "Bali": ["Kabupaten Badung", "Kabupaten Bangli", "Kabupaten Buleleng", "Kabupaten Gianyar", "Kabupaten Jembrana", "Kabupaten Karangasem", "Kabupaten Klungkung", "Kabupaten Tabanan", "Kota Denpasar"], "Nusa Tenggara Barat": ["Kabupaten Bima", "Kabupaten Dompu", "Kabupaten Lombok Barat", "Kabupaten Lombok Tengah", "Kabupaten Lombok Timur", "Kabupaten Lombok Utara", "Kabupaten Sumbawa", "Kabupaten Sumbawa Barat", "Kota Bima", "Kota Mataram"], "Nusa Tenggara Timur": ["Kabupaten Alor", "Kabupaten Belu", "Kabupaten Ende", "Kabupaten Flores Timur", "Kabupaten Kupang", "Kabupaten Lembata", "Kabupaten Malaka", "Kabupaten Manggarai", "Kabupaten Manggarai Barat", "Kabupaten Manggarai Timur", "Kabupaten Nagekeo", "Kabupaten Ngada", "Kabupaten Rote Ndao", "Kabupaten Sabu Raijua", "Kabupaten Sikka", "Kabupaten Sumba Barat", "Kabupaten Sumba Barat Daya", "Kabupaten Sumba Tengah", "Kabupaten Sumba Timur", "Kabupaten Timor Tengah Selatan", "Kabupaten Timor Tengah Utara", "Kota Kupang"], "Kalimantan Barat": ["Kabupaten Bengkayang", "Kabupaten Kapuas Hulu", "Kabupaten Kayong Utara", "Kabupaten Ketapang", "Kabupaten Kubu Raya", "Kabupaten Landak", "Kabupaten Melawi", "Kabupaten Mempawah", "Kabupaten Sambas", "Kabupaten Sanggau", "Kabupaten Sekadau", "Kabupaten Sintang", "Kota Pontianak", "Kota Singkawang"], "Kalimantan Tengah": ["Kabupaten Barito Selatan", "Kabupaten Barito Timur", "Kabupaten Barito Utara", "Kabupaten Gunung Mas", "Kabupaten Kapuas", "Kabupaten Katingan", "Kabupaten Kotawaringin Barat", "Kabupaten Kotawaringin Timur", "Kabupaten Lamandau", "Kabupaten Murung Raya", "Kabupaten Pulang Pisau", "Kabupaten Seruyan", "Kabupaten Sukamara", "Kota Palangka Raya"], "Kalimantan Selatan": ["Kabupaten Balangan", "Kabupaten Banjar", "Kabupaten Barito Kuala", "Kabupaten Hulu Sungai Selatan", "Kabupaten Hulu Sungai Tengah", "Kabupaten Hulu Sungai Utara", "Kabupaten Kotabaru", "Kabupaten Tabalong", "Kabupaten Tanah Bumbu", "Kabupaten Tanah Laut", "Kabupaten Tapin", "Kota Banjarbaru", "Kota Banjarmasin"], "Kalimantan Timur": ["Kabupaten Berau", "Kabupaten Kutai Barat", "Kabupaten Kutai Kartanegara", "Kabupaten Kutai Timur", "Kabupaten Mahakam Ulu", "Kabupaten Paser", "Kabupaten Penajam Paser Utara", "Kota Balikpapan", "Kota Bontang", "Kota Samarinda"], "Kalimantan Utara": ["Kabupaten Bulungan", "Kabupaten Malinau", "Kabupaten Nunukan", "Kabupaten Tana Tidung", "Kota Tarakan"], "Sulawesi Utara": ["Kabupaten Bolaang Mongondow", "Kabupaten Bolaang Mongondow Selatan", "Kabupaten Bolaang Mongondow Timur", "Kabupaten Bolaang Mongondow Utara", "Kabupaten Kepulauan Sangihe", "Kabupaten Kepulauan Siau Tagulandang Biaro", "Kabupaten Kepulauan Talaud", "Kabupaten Minahasa", "Kabupaten Minahasa Selatan", "Kabupaten Minahasa Tenggara", "Kabupaten Minahasa Utara", "Kota Bitung", "Kota Kotamobagu", "Kota Manado", "Kota Tomohon"], "Sulawesi Tengah": ["Kabupaten Banggai", "Kabupaten Banggai Kepulauan", "Kabupaten Banggai Laut", "Kabupaten Buol", "Kabupaten Donggala", "Kabupaten Morowali", "Kabupaten Morowali Utara", "Kabupaten Parigi Moutong", "Kabupaten Poso", "Kabupaten Sigi", "Kabupaten Tojo Una-Una", "Kabupaten Tolitoli", "Kota Palu"], "Sulawesi Selatan": ["Kabupaten Bantaeng", "Kabupaten Barru", "Kabupaten Bone", "Kabupaten Bulukumba", "Kabupaten Enrekang", "Kabupaten Gowa", "Kabupaten Jeneponto", "Kabupaten Kepulauan Selayar", "Kabupaten Luwu", "Kabupaten Luwu Timur", "Kabupaten Luwu Utara", "Kabupaten Maros", "Kabupaten Pangkajene dan Kepulauan", "Kabupaten Pinrang", "Kabupaten Sidenreng Rappang", "Kabupaten Sinjai", "Kabupaten Soppeng", "Kabupaten Takalar", "Kabupaten Tana Toraja", "Kabupaten Toraja Utara", "Kabupaten Wajo", "Kota Makassar", "Kota Parepare", "Kota Palopo"], "Sulawesi Tenggara": ["Kabupaten Bombana", "Kabupaten Buton", "Kabupaten Buton Selatan", "Kabupaten Buton Tengah", "Kabupaten Buton Utara", "Kabupaten Kolaka", "Kabupaten Kolaka Timur", "Kabupaten Kolaka Utara", "Kabupaten Konawe", "Kabupaten Konawe Kepulauan", "Kabupaten Konawe Selatan", "Kabupaten Konawe Utara", "Kabupaten Muna", "Kabupaten Muna Barat", "Kabupaten Wakatobi", "Kota Baubau", "Kota Kendari"], "Gorontalo": ["Kabupaten Boalemo", "Kabupaten Bone Bolango", "Kabupaten Gorontalo", "Kabupaten Gorontalo Utara", "Kabupaten Pohuwato", "Kota Gorontalo"], "Sulawesi Barat": ["Kabupaten Majene", "Kabupaten Mamasa", "Kabupaten Mamuju", "Kabupaten Mamuju Tengah", "Kabupaten Pasangkayu", "Kabupaten Polewali Mandar"], "Maluku": ["Kabupaten Buru", "Kabupaten Buru Selatan", "Kabupaten Kepulauan Aru", "Kabupaten Kepulauan Tanimbar", "Kabupaten Maluku Barat Daya", "Kabupaten Maluku Tengah", "Kabupaten Maluku Tenggara", "Kabupaten Seram Bagian Barat", "Kabupaten Seram Bagian Timur", "Kota Ambon", "Kota Tual"], "Maluku Utara": ["Kabupaten Halmahera Barat", "Kabupaten Halmahera Selatan", "Kabupaten Halmahera Tengah", "Kabupaten Halmahera Timur", "Kabupaten Halmahera Utara", "Kabupaten Kepulauan Sula", "Kabupaten Pulau Morotai", "Kabupaten Pulau Taliabu", "Kota Ternate", "Kota Tidore Kepulauan"], "Papua": ["Kabupaten Biak Numfor", "Kabupaten Jayapura", "Kabupaten Keerom", "Kabupaten Kepulauan Yapen", "Kabupaten Mamberamo Raya", "Kabupaten Sarmi", "Kabupaten Supiori", "Kabupaten Waropen", "Kota Jayapura"], "Papua Barat": ["Kabupaten Fakfak", "Kabupaten Kaimana", "Kabupaten Manokwari", "Kabupaten Manokwari Selatan", "Kabupaten Pegunungan Arfak", "Kabupaten Teluk Bintuni", "Kabupaten Teluk Wondama"], "Papua Selatan": ["Kabupaten Asmat", "Kabupaten Boven Digoel", "Kabupaten Mappi", "Kabupaten Merauke"], "Papua Tengah": ["Kabupaten Deiyai", "Kabupaten Dogiyai", "Kabupaten Intan Jaya", "Kabupaten Mimika", "Kabupaten Nabire", "Kabupaten Paniai", "Kabupaten Puncak", "Kabupaten Puncak Jaya"], "Papua Pegunungan": ["Kabupaten Jayawijaya", "Kabupaten Lanny Jaya", "Kabupaten Mamberamo Tengah", "Kabupaten Nduga", "Kabupaten Pegunungan Bintang", "Kabupaten Tolikara", "Kabupaten Yalimo", "Kabupaten Yahukimo"], "Papua Barat Daya": ["Kabupaten Maybrat", "Kabupaten Raja Ampat", "Kabupaten Sorong", "Kabupaten Sorong Selatan", "Kabupaten Tambrauw", "Kota Sorong"]};
+var SEKTOR_LABEL = {"kuliner":"Kuliner / makanan & minuman","retail":"Retail / toko kelontong","jasa":"Jasa (laundry, bengkel, salon…)","manufaktur":"Produksi / manufaktur kecil","fashion":"Fashion & kerajinan","agribisnis":"Agribisnis / peternakan","digital":"Digital / kreatif","lainnya":"Lainnya"};
+var KEBUTUHAN_LABEL = {"kemasan":"Kemasan","pencatatan":"Pencatatan keuangan","digital":"Pemasaran digital","teknologi":"Teknologi produksi/operasional","legalitas":"Legalitas & SOP","investasi":"Kesiapan investasi"};
+var KEBUTUHAN_WARNA = {"kemasan":"#e3b959","pencatatan":"#7fb3d5","digital":"#8e7cc3","teknologi":"#6fbf73","legalitas":"#e08a5a","investasi":"#d96a8b"};
+var KEBUTUHAN_PROGRAM = {"kemasan":"Klinik kemasan, fasilitasi desain dan percetakan bersama","pencatatan":"Pendampingan pembukuan oleh pendamping lapangan","digital":"Pelatihan kanal penjualan dan pendampingan profil usaha online","teknologi":"Fasilitasi alat dan digitalisasi proses sesuai sektor","legalitas":"Gerai layanan legalitas keliling, pendampingan SOP","investasi":"Forum temu mitra investasi, kurasi oleh dinas tanpa membuka data mentah"};
+</script>
+<script>
+"use strict";
+/* ===== Util ===== */
+function el(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function fmtBil(n){ if(n==null||isNaN(n)) return "—"; return new Intl.NumberFormat("id-ID").format(Math.round(n)); }
+function fmtRp(n){ if(n==null||isNaN(n)) return "—"; return "Rp" + new Intl.NumberFormat("id-ID").format(Math.round(n)); }
+function fmtSkor(n){ if(n==null||isNaN(n)) return "—"; return String(Math.round(n)); }
+function labelWilayah(){ return (S.provinsi||"Semua provinsi") + (S.kota ? " — " + S.kota : ""); }
+function labelPeran(p){ return p==="pemilik"?"Pemilik aplikasi":p==="pendamping"?"Pendamping lapangan":"Dinas"; }
+
+/* ===== State & client ===== */
+var S = { user:null, email:null, peran:null, provinsiTugas:null, kotaTugas:null,
+  provinsi:"", kota:"", layar:"ringkasan", logAgregat:{}, petaTampil:10,
+  petaDaftar:[], agregatTerakhir:null, contohAktif:{} };
+var __client = null;
+function getClient(){
+  if(__client) return __client;
+  if(window.supabase && window.supabase.createClient){
+    try{ __client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON); }catch(e){ __client = null; }
+  }
+  return __client;
+}
+
+/* ===== Popup ramah ===== */
+function tampilPopup(judul, isi){
+  el("popupJudul").textContent = judul;
+  el("popupIsi").textContent = isi;
+  el("popupOverlay").classList.add("show");
+}
+function tutupPopup(){ el("popupOverlay").classList.remove("show"); }
+function pesanRamah(err){
+  var m = String((err && err.message) || err || "");
+  if(/invalid login credentials|invalid email|invalid password/i.test(m)) return "Email atau kata sandi tidak cocok.\nPeriksa lagi ketikan Anda, lalu coba masuk kembali.";
+  if(/email not confirmed|not confirmed/i.test(m)) return "Email Anda belum dikonfirmasi.\nBuka email Anda dan ketuk tautan konfirmasi yang kami kirim, lalu masuk kembali.";
+  if(/too many requests|rate limit|email rate limit/i.test(m)) return "Terlalu banyak percobaan barusan.\nTunggu sebentar, lalu coba lagi.";
+  if(/network|failed to fetch|load failed/i.test(m)) return "Tidak bisa terhubung ke cloud.\nPeriksa koneksi internet Anda, lalu coba lagi.";
+  if(/user already registered|already registered/i.test(m)) return "Email ini sudah terdaftar.\nSilakan masuk, atau pakai \"Lupa kata sandi?\" bila Anda lupa kata sandinya.";
+  if(/password should be at least/i.test(m)) return "Kata sandi terlalu pendek.\nBuat kata sandi minimal 6 karakter.";
+  return "Terjadi kendala saat memproses permintaan Anda.\nCoba lagi sebentar lagi. Bila masih gagal, hubungi pemilik aplikasi.";
+}
+function apakahErrorSetup(err){
+  var m = String((err && err.message) || err || "") + " " + String((err && err.code) || "");
+  return /does not exist|relation .* does not|function .* does not|42P01|42883|PGRST202|table .* not found|column .* does not exist/i.test(m);
+}
+
+/* ===== Data contoh (jalur terpisah dari data nyata; selalu berlabel) ===== */
+var CONTOH = {
+  ringkasan: { n:1240, nTerdaftar:1860, naikLevelPersen:18, medianAwal:62, medianAkhir:71,
+    sebaranLevel:{"Usaha Mikro":768,"Usaha Kecil":347,"Usaha Menengah":125},
+    sebaranSektor:{kuliner:422,retail:273,jasa:223,manufaktur:124,fashion:87,agribisnis:62,digital:37,lainnya:12},
+    median:{kesehatan:71,siap_investasi:64,konsistensi:68,kemasan:66,legalitas:70} },
+  tren: { bulan:["Mei","Jun","Jul","Agu","Sep","Okt"], kesehatan:[62,64,65,67,69,71],
+    siap:[48,52,55,58,61,64], konsistensi:[55,58,60,63,66,68],
+    keaktifan:{masuk_30_hari:967,masuk_60_hari:793,masuk_90_hari:645},
+    medianOmzet:18500000, kesenjanganMenutup:[{jenis:"pencatatan",turunPersen:12},{jenis:"kemasan",turunPersen:9},{jenis:"digital",turunPersen:6}] },
+  peta: [ {wilayah:"Wilayah A",dominan:"kemasan",atas:[{jenis:"kemasan",jumlah:96},{jenis:"pencatatan",jumlah:61},{jenis:"digital",jumlah:44}]},
+    {wilayah:"Wilayah B",dominan:"pencatatan",atas:[{jenis:"pencatatan",jumlah:88},{jenis:"kemasan",jumlah:52},{jenis:"legalitas",jumlah:39}]},
+    {wilayah:"Wilayah C",dominan:"digital",atas:[{jenis:"digital",jumlah:74},{jenis:"teknologi",jumlah:41},{jenis:"kemasan",jumlah:33}]},
+    {wilayah:"Wilayah D",dominan:"legalitas",atas:[{jenis:"legalitas",jumlah:69},{jenis:"pencatatan",jumlah:47},{jenis:"teknologi",jumlah:28}]},
+    {wilayah:"Wilayah E",dominan:"investasi",atas:[{jenis:"investasi",jumlah:58},{jenis:"digital",jumlah:46},{jenis:"kemasan",jumlah:31}]} ],
+  siap: { jumlah:214, dari:1240 },
+  laporan: { kalimat:"Pada wilayah contoh, 1.240 UMKM aktif mencatat dari 1.860 terdaftar. Dalam 6 bulan, 18% usaha naik level dan median skor kesehatan kohort naik dari 62 menjadi 71. Kebutuhan terbanyak adalah Kemasan, diikuti Pencatatan keuangan dan Pemasaran digital. Sebanyak 214 usaha melewati ambang kesiapan investasi dan dapat difasilitasi ke forum temu mitra investasi." }
+};
+function spandukContoh(){ return '<div class="spanduk-contoh">Data contoh — angka ilustratif, bukan data nyata</div>'; }
+function tombolContohHtml(layar){ return '<div class="belum-cukup"><p>Belum cukup data untuk kelompok ini.</p><p class="muted" style="margin-top:6px">Kelompok dengan jumlah usaha kurang dari 5 tidak ditampilkan, agar tidak ada usaha yang dapat dikenali dari angkanya.</p><p style="margin-top:12px"><button type="button" class="ghost kecil" data-contoh="'+layar+'">Lihat contoh</button></p></div>'; }
+function pesanSetupHtml(){ return '<div class="warn-box"><p><strong>Fitur ini belum aktif — pengaturan cloud belum dijalankan.</strong></p><p style="margin-top:6px">Data agregat wilayah belum bisa ditampilkan karena pengaturan cloud untuk dashboard ini belum dijalankan. Silakan hubungi pemilik aplikasi. Sementara itu, Anda tetap bisa melihat tampilan contoh di bawah ini.</p></div>'; }
+
+/* ===== Auth ===== */
+async function masuk(email, sandi){
+  email = String(email||"").trim(); sandi = String(sandi||"");
+  if(!email || !sandi){ tampilPopup("Belum lengkap","Isi email dan kata sandi Anda, lalu coba lagi."); return {ok:false}; }
+  var c = getClient();
+  if(!c){ tampilPopup("Fitur ini belum aktif","Fitur ini belum aktif — pengaturan cloud belum dijalankan. Coba lagi nanti."); return {ok:false, setup:true}; }
+  var r;
+  try{ r = await c.auth.signInWithPassword({email:email, password:sandi}); }
+  catch(e){ tampilPopup("Tidak bisa masuk", pesanRamah(e)); return {ok:false}; }
+  if(r.error){ tampilPopup("Tidak bisa masuk", pesanRamah(r.error)); return {ok:false, error:r.error}; }
+  return await sesudahMasuk(r.data && r.data.user);
+}
+async function sesudahMasuk(u){
+  if(!u || !u.email){ tampilPopup("Tidak bisa masuk","Sesi masuk tidak lengkap. Coba masuk lagi."); return {ok:false}; }
+  var email = String(u.email).toLowerCase();
+  var akses = await periksaAkses(email);
+  if(!akses.ok){
+    var c = getClient();
+    if(c && c.auth && c.auth.signOut){ try{ await c.auth.signOut(); }catch(e){} }
+    if(akses.alasan === "setup"){
+      tampilPopup("Fitur ini belum aktif","Fitur ini belum aktif — pengaturan cloud belum dijalankan. Silakan hubungi pemilik aplikasi.");
+    }else{
+      tampilPopup("Belum terdaftar","Akun ini belum terdaftar sebagai pengguna Dashboard Pemda — hubungi pemilik aplikasi.");
+    }
+    return {ok:false, ditolak:true, alasan:akses.alasan};
+  }
+  S.user = u; S.email = email; S.peran = akses.peran;
+  S.provinsiTugas = akses.provinsi || null; S.kotaTugas = akses.kota || null;
+  S.logAgregat = {};
+  await catatLog("masuk", "Peran " + labelPeran(akses.peran));
+  tampilDashboard();
+  return {ok:true, peran:akses.peran};
+}
+async function periksaAkses(email){
+  if(email === EMAIL_PEMILIK) return {ok:true, peran:"pemilik", provinsi:null, kota:null};
+  var c = getClient();
+  if(!c) return {ok:false, alasan:"setup"};
+  var r;
+  try{ r = await c.from("akses_pemda").select("email,peran,provinsi,kota,aktif").eq("email", email).maybeSingle(); }
+  catch(e){ return {ok:false, alasan:"setup", error:e}; }
+  if(r.error){
+    if(apakahErrorSetup(r.error)) return {ok:false, alasan:"setup", error:r.error};
+    return {ok:false, alasan:"setup", error:r.error};
+  }
+  var d = r.data;
+  if(!d || d.aktif !== true) return {ok:false, alasan:"tidak-terdaftar"};
+  return {ok:true, peran:d.peran, provinsi:d.provinsi, kota:d.kota || null};
+}
+async function daftar(email, sandi){
+  email = String(email||"").trim(); sandi = String(sandi||"");
+  if(!email || !sandi){ tampilPopup("Belum lengkap","Isi email dan kata sandi, lalu coba lagi."); return {ok:false}; }
+  if(sandi.length < 6){ tampilPopup("Kata sandi terlalu pendek","Buat kata sandi minimal 6 karakter."); return {ok:false}; }
+  var c = getClient();
+  if(!c){ tampilPopup("Fitur ini belum aktif","Fitur ini belum aktif — pengaturan cloud belum dijalankan. Coba lagi nanti."); return {ok:false, setup:true}; }
+  var r;
+  try{ r = await c.auth.signUp({email:email, password:sandi, options:{emailRedirectTo: PEMDA_URL}}); }
+  catch(e){ tampilPopup("Tidak bisa mendaftar", pesanRamah(e)); return {ok:false}; }
+  if(r.error){ tampilPopup("Tidak bisa mendaftar", pesanRamah(r.error)); return {ok:false, error:r.error}; }
+  tampilPopup("Periksa email Anda","Kami sudah mengirim tautan konfirmasi ke email Anda.\nBuka email itu dan ketuk tautannya, lalu masuk di sini.");
+  return {ok:true};
+}
+async function lupaSandi(email){
+  email = String(email||"").trim();
+  if(!email){ tampilPopup("Belum lengkap","Isi email akun Anda, lalu coba lagi."); return {ok:false}; }
+  var c = getClient();
+  if(!c){ tampilPopup("Fitur ini belum aktif","Fitur ini belum aktif — pengaturan cloud belum dijalankan. Coba lagi nanti."); return {ok:false, setup:true}; }
+  var r;
+  try{ r = await c.auth.resetPasswordForEmail(email, {redirectTo: PEMDA_URL}); }
+  catch(e){ tampilPopup("Tidak bisa mengirim tautan", pesanRamah(e)); return {ok:false}; }
+  if(r.error){ tampilPopup("Tidak bisa mengirim tautan", pesanRamah(r.error)); return {ok:false, error:r.error}; }
+  tampilPopup("Tautan dikirim","Bila email itu terdaftar, tautan untuk membuat kata sandi baru sudah kami kirim.\nBuka email Anda dan ketuk tautannya.");
+  return {ok:true};
+}
+async function keluar(){
+  var c = getClient();
+  if(c && c.auth && c.auth.signOut){ try{ await c.auth.signOut(); }catch(e){} }
+  S.user = null; S.email = null; S.peran = null; S.provinsiTugas = null; S.kotaTugas = null;
+  S.logAgregat = {}; S.agregatTerakhir = null;
+  el("layarDashboard").classList.add("hidden");
+  el("layarMasuk").classList.remove("hidden");
+  tampilPanel("panelMasuk");
+}
+
+/* ===== Log akses ===== */
+async function catatLog(aksi, detail){
+  var c = getClient();
+  if(!c || !S.email) return false;
+  try{
+    var r = await c.from("akses_pemda_log").insert({email:S.email, aksi:aksi, detail:detail || ""});
+    return !r.error;
+  }catch(e){ return false; }
+}
+function catatLihatAgregat(){
+  var kunci = (S.provinsi || "") + "|" + (S.kota || "");
+  if(S.logAgregat[kunci]) return Promise.resolve(false);
+  S.logAgregat[kunci] = true;
+  return catatLog("lihat_agregat", "Wilayah " + labelWilayah());
+}
+
+/* ===== Wilayah (cascade, dibatasi peran) ===== */
+function isiProvinsi(){
+  var sel = el("selProvinsi");
+  sel.innerHTML = "";
+  var daftar = Object.keys(WILAYAH);
+  if(S.peran && S.peran !== "pemilik" && S.provinsiTugas){
+    daftar = daftar.filter(function(p){ return p === S.provinsiTugas; });
+  }
+  if(daftar.length !== 1){
+    var o0 = document.createElement("option"); o0.value = ""; o0.textContent = "Pilih provinsi"; sel.appendChild(o0);
+  }
+  daftar.forEach(function(p){
+    var o = document.createElement("option"); o.value = p; o.textContent = p; sel.appendChild(o);
+  });
+  sel.value = daftar.length === 1 ? daftar[0] : (S.provinsi || "");
+  isiKota();
+}
+function isiKota(){
+  var sel = el("selKota");
+  var prov = el("selProvinsi").value;
+  sel.innerHTML = "";
+  if(!prov){ var o = document.createElement("option"); o.value = ""; o.textContent = "Pilih provinsi dulu"; sel.appendChild(o); sel.disabled = true; return; }
+  sel.disabled = false;
+  var daftar = WILAYAH[prov] || [];
+  if(S.peran && S.peran !== "pemilik" && S.kotaTugas){
+    daftar = daftar.filter(function(k){ return k === S.kotaTugas; });
+  }
+  if(S.kotaTugas){
+    daftar.forEach(function(k){ var op = document.createElement("option"); op.value = k; op.textContent = k; sel.appendChild(op); });
+    sel.value = daftar[0] || "";
+    return;
+  }
+  var o0 = document.createElement("option"); o0.value = ""; o0.textContent = "Semua kota di provinsi ini"; sel.appendChild(o0);
+  daftar.forEach(function(k){ var op = document.createElement("option"); op.value = k; op.textContent = k; sel.appendChild(op); });
+  sel.value = S.kota || "";
+}
+function bacaWilayahTerpilih(){
+  S.provinsi = el("selProvinsi").value || "";
+  S.kota = el("selKota").value || "";
+  var info = "";
+  if(S.peran && S.peran !== "pemilik"){
+    info = "Wilayah tugas Anda: " + (S.provinsiTugas || "—") + (S.kotaTugas ? " — " + S.kotaTugas : " (seluruh kota di provinsi itu)");
+  }else if(S.peran === "pemilik"){
+    info = "Anda masuk sebagai pemilik aplikasi — semua wilayah dapat dilihat.";
+  }
+  el("infoWilayah").textContent = info;
+  ["ringkasan","tren","peta","siap","laporan"].forEach(function(l){
+    var lab = el(l + "WilayahLabel");
+    if(lab) lab.textContent = "Wilayah: " + labelWilayah();
+  });
+}
+
+/* ===== Ambil agregat ===== */
+async function muatAgregat(prov, kota){
+  var c = getClient();
+  if(!c) return {ok:false, setup:true};
+  var r;
+  try{ r = await c.rpc("agregat_pemda", {p_provinsi: prov || null, p_kota: kota || null}); }
+  catch(e){
+    if(apakahErrorSetup(e)) return {ok:false, setup:true, error:e};
+    return {ok:false, error:e};
+  }
+  if(r.error){
+    if(apakahErrorSetup(r.error)) return {ok:false, setup:true, error:r.error};
+    return {ok:false, error:r.error};
+  }
+  return {ok:true, data: normalisasiData(r.data)};
+}
+function normalisasiData(d){
+  if(!d) return null;
+  if(Array.isArray(d)) return d[0] || null;
+  return d;
+}
+function cukupData(d){ return !!(d && typeof d.n === "number" && d.n >= AMBANG); }
+
+/* ===== Navigasi layar ===== */
+function tampilLayar(nama){
+  S.layar = nama;
+  var btns = document.querySelectorAll("#tabbar button");
+  btns.forEach(function(b){ b.classList.toggle("aktif", b.getAttribute("data-layar") === nama); });
+  ["ringkasan","tren","peta","siap","laporan"].forEach(function(l){
+    el("layar" + l.charAt(0).toUpperCase() + l.slice(1)).classList.toggle("aktif", l === nama);
+  });
+}
+function tampilPanel(id){
+  ["panelMasuk","panelDaftar","panelLupa"].forEach(function(p){ el(p).classList.add("hidden"); });
+  el(id).classList.remove("hidden");
+}
+function tampilDashboard(){
+  el("layarMasuk").classList.add("hidden");
+  el("layarDashboard").classList.remove("hidden");
+  el("infoPeran").textContent = (S.email || "") + " — " + labelPeran(S.peran);
+  isiProvinsi();
+  bacaWilayahTerpilih();
+  tampilLayar("ringkasan");
+}
+</script>
+<script>
+"use strict";
+/* ===== Render: sebaran (kunci dibaca apa adanya dari data) ===== */
+function htmlSebaran(obj, labelMap){
+  if(!obj) return "";
+  var total = 0, keys = Object.keys(obj);
+  keys.forEach(function(k){ total += Number(obj[k]) || 0; });
+  if(total <= 0) return '<p class="muted">Belum ada sebaran untuk kelompok ini.</p>';
+  var html = "";
+  keys.sort(function(a,b){ return (Number(obj[b])||0) - (Number(obj[a])||0); }).forEach(function(k){
+    var v = Number(obj[k]) || 0;
+    var persen = Math.round(v / total * 100);
+    var nama = (labelMap && labelMap[k]) || k;
+    html += '<div class="bar-row"><span class="nm">' + esc(nama) + '</span><span class="bar"><i style="width:' + persen + '%"></i></span><span class="nil">' + fmtBil(v) + ' (' + persen + '%)</span></div>';
+  });
+  return html;
+}
+
+/* ===== Layar 1: Ringkasan ===== */
+async function muatRingkasan(){
+  var box = el("ringkasanIsi");
+  el("contohRingkasan").classList.add("hidden");
+  box.innerHTML = '<p class="muted">Memuat ringkasan wilayah…</p>';
+  var hasil = await muatAgregat(S.provinsi, S.kota);
+  if(!hasil.ok){
+    if(hasil.setup){ box.innerHTML = pesanSetupHtml() + tombolContohHtml("ringkasan"); }
+    else { box.innerHTML = '<p class="muted">Ringkasan belum bisa dimuat.</p>'; tampilPopup("Belum bisa memuat", pesanRamah(hasil.error)); }
+    return hasil;
+  }
+  var d = hasil.data;
+  S.agregatTerakhir = d;
+  if(!cukupData(d)){
+    box.innerHTML = tombolContohHtml("ringkasan");
+    return hasil;
+  }
+  var med = d.median || {};
+  var kal = d.kalibrasi || {};
+  var html = '<div class="grid">'
+    + '<div class="stat"><div class="angka">' + fmtBil(d.n) + '</div><div class="lbl">UMKM aktif mencatat di wilayah ini</div></div>'
+    + '<div class="stat"><div class="angka">' + fmtSkor(med.kesehatan) + '</div><div class="lbl">Median skor kesehatan usaha</div></div>'
+    + '<div class="stat"><div class="angka">' + fmtSkor(med.siap_investasi) + '</div><div class="lbl">Median Skor Siap Investasi</div></div>'
+    + '<div class="stat"><div class="angka">' + fmtSkor(med.konsistensi) + '</div><div class="lbl">Median skor konsistensi</div></div>'
+    + '</div>';
+  html += '<h3>Sebaran level (skala usaha)</h3>' + htmlSebaran(d.sebaran_level, null);
+  html += '<h3>Sebaran sektor</h3>' + htmlSebaran(d.sebaran_sektor, SEKTOR_LABEL);
+  if(kal && kal.n != null){
+    html += '<h3>Omzet tercatat agregat</h3><p>Median omzet tercatat: <strong>' + fmtRp(kal.median_omzet) + '</strong> per bulan'
+      + (kal.n >= AMBANG ? '' : ' (jumlah baris kalibrasi kurang dari 5, angka median belum ditampilkan)') + '.</p>'
+      + '<p class="muted">Angka ini adalah omzet yang tercatat di aplikasi, bukan klaim omzet seluruh daerah.</p>';
+  }
+  box.innerHTML = html;
+  catatLihatAgregat();
+  return hasil;
+}
+function renderContohRingkasan(){
+  var c = CONTOH.ringkasan;
+  var totalLevel = 0; Object.keys(c.sebaranLevel).forEach(function(k){ totalLevel += c.sebaranLevel[k]; });
+  var html = spandukContoh()
+    + '<div class="card"><div class="grid">'
+    + '<div class="stat"><div class="angka">' + fmtBil(c.n) + '</div><div class="lbl">UMKM aktif mencatat dari ' + fmtBil(c.nTerdaftar) + ' terdaftar di wilayah contoh</div></div>'
+    + '<div class="stat"><div class="angka">' + c.naikLevelPersen + '%</div><div class="lbl">Naik level dalam 6 bulan (kohort yang sama, bukan pendaftar baru)</div></div>'
+    + '<div class="stat"><div class="angka">' + c.medianAwal + ' → ' + c.medianAkhir + '</div><div class="lbl">Median skor kesehatan awal semester ke akhir semester</div></div>'
+    + '<div class="stat"><div class="angka">' + fmtSkor(c.median.siap_investasi) + '</div><div class="lbl">Median Skor Siap Investasi (contoh)</div></div>'
+    + '</div>'
+    + '<h3>Sebaran level (contoh)</h3>' + htmlSebaran(c.sebaranLevel, null)
+    + '<h3>Sebaran sektor (contoh)</h3>' + htmlSebaran(c.sebaranSektor, SEKTOR_LABEL)
+    + '<p class="muted" style="margin-top:10px">Angka pada tampilan ini adalah data contoh dari brosur manfaat aplikasi.</p>'
+    + '<p style="margin-top:10px"><button type="button" class="ghost kecil" data-tutup-contoh="ringkasan">Tutup contoh</button></p></div>';
+  el("contohRingkasan").innerHTML = html;
+  el("contohRingkasan").classList.remove("hidden");
+}
+
+/* ===== Layar 2: Tren ===== */
+async function muatTren(){
+  var box = el("trenIsi");
+  el("contohTren").classList.add("hidden");
+  box.innerHTML = '<p class="muted">Memuat tren pertumbuhan…</p>';
+  var hasil = await muatAgregat(S.provinsi, S.kota);
+  if(!hasil.ok){
+    if(hasil.setup){ box.innerHTML = pesanSetupHtml() + tombolContohHtml("tren"); }
+    else { box.innerHTML = '<p class="muted">Tren belum bisa dimuat.</p>'; tampilPopup("Belum bisa memuat", pesanRamah(hasil.error)); }
+    return hasil;
+  }
+  var d = hasil.data;
+  S.agregatTerakhir = d;
+  if(!cukupData(d)){
+    box.innerHTML = tombolContohHtml("tren");
+    return hasil;
+  }
+  var tren = Array.isArray(d.tren) ? d.tren : [];
+  var kea = d.keaktifan || {};
+  var kal = d.kalibrasi || {};
+  var html = "";
+  html += '<h3>1. Perpindahan level</h3>';
+  html += '<p>Belum ada data tren perpindahan level untuk wilayah ini. Perpindahan level dihitung dari kohort yang sama yang diukur berulang; datanya tampil setelah pencatatan kohort berjalan beberapa periode.</p>';
+  html += '<h3>2. Median skor per bulan (6 bulan terakhir)</h3>';
+  if(tren.length){
+    html += '<table><tr><th>Bulan</th><th>UMKM</th><th>Kesehatan</th><th>Siap Investasi</th><th>Konsistensi</th></tr>';
+    tren.forEach(function(t){
+      html += '<tr><td>' + esc(t.bulan || "—") + '</td><td>' + fmtBil(t.n) + '</td><td>'
+        + (t.median_kesehatan == null ? 'Belum cukup data untuk bulan ini' : fmtSkor(t.median_kesehatan)) + '</td><td>'
+        + (t.median_siap_investasi == null ? 'Belum cukup data untuk bulan ini' : fmtSkor(t.median_siap_investasi)) + '</td><td>'
+        + (t.median_konsistensi == null ? 'Belum cukup data untuk bulan ini' : fmtSkor(t.median_konsistensi)) + '</td></tr>';
+    });
+    html += '</table>';
+  }else{
+    html += '<p>Belum ada data tren.</p>';
+  }
+  html += '<h3>3. Keaktifan mencatat</h3>';
+  html += '<p>Jumlah baris agregat yang masuk dalam 30 hari terakhir: <strong>' + fmtBil(kea.masuk_30_hari) + '</strong>; 60 hari: <strong>' + fmtBil(kea.masuk_60_hari) + '</strong>; 90 hari: <strong>' + fmtBil(kea.masuk_90_hari) + '</strong>.</p>'
+    + '<p class="muted">Angka ini adalah hitungan baris agregat yang masuk — ukuran apakah pembinaan membentuk kebiasaan mencatat, bukan euforia awal.</p>';
+  html += '<h3>4. Omzet tercatat agregat</h3>';
+  if(kal && kal.n != null && kal.n >= AMBANG && kal.median_omzet != null){
+    html += '<p>Median omzet tercatat: <strong>' + fmtRp(kal.median_omzet) + '</strong> per bulan (dari ' + fmtBil(kal.n) + ' baris kalibrasi).</p>'
+      + '<p class="muted">Angka ini adalah omzet yang tercatat di aplikasi, bukan klaim omzet seluruh daerah.</p>';
+  }else{
+    html += '<p>Belum cukup data untuk kelompok ini.</p>';
+  }
+  html += '<h3>5. Kesenjangan yang menutup</h3>';
+  html += '<p>Belum ada data tren kesenjangan yang menutup untuk wilayah ini. Jenis kesenjangan yang paling banyak selesai per periode tampil setelah data kohort beberapa periode tersedia.</p>';
+  box.innerHTML = html;
+  catatLihatAgregat();
+  return hasil;
+}
+function renderContohTren(){
+  var c = CONTOH.tren;
+  var html = spandukContoh() + '<div class="card">'
+    + '<h3>1. Perpindahan level (contoh)</h3><p><strong>18%</strong> usaha naik level dalam 6 bulan pada kohort yang sama.</p>'
+    + '<h3>2. Median skor per bulan (contoh)</h3><table><tr><th>Bulan</th><th>Kesehatan</th><th>Siap Investasi</th><th>Konsistensi</th></tr>';
+  c.bulan.forEach(function(b,i){
+    html += '<tr><td>' + esc(b) + '</td><td>' + c.kesehatan[i] + '</td><td>' + c.siap[i] + '</td><td>' + c.konsistensi[i] + '</td></tr>';
+  });
+  html += '</table>'
+    + '<h3>3. Keaktifan mencatat (contoh)</h3><p>Baris agregat yang masuk: 30 hari <strong>' + fmtBil(c.keaktifan.masuk_30_hari) + '</strong>; 60 hari <strong>' + fmtBil(c.keaktifan.masuk_60_hari) + '</strong>; 90 hari <strong>' + fmtBil(c.keaktifan.masuk_90_hari) + '</strong>.</p>'
+    + '<h3>4. Omzet tercatat agregat (contoh)</h3><p>Median omzet tercatat: <strong>' + fmtRp(c.medianOmzet) + '</strong> per bulan.</p>'
+    + '<h3>5. Kesenjangan yang menutup (contoh)</h3><p>' + c.kesenjanganMenutup.map(function(k){ return (KEBUTUHAN_LABEL[k.jenis] || k.jenis) + ' berkurang ' + k.turunPersen + '%'; }).join('; ') + '.</p>'
+    + '<p class="muted" style="margin-top:10px">Angka pada tampilan ini adalah data contoh dari brosur manfaat aplikasi.</p>'
+    + '<p style="margin-top:10px"><button type="button" class="ghost kecil" data-tutup-contoh="tren">Tutup contoh</button></p></div>';
+  el("contohTren").innerHTML = html;
+  el("contohTren").classList.remove("hidden");
+}
+
+/* ===== Layar 3: Peta kebutuhan ===== */
+async function muatPeta(){
+  var box = el("petaIsi");
+  el("petaTabel").innerHTML = "";
+  el("contohPeta").classList.add("hidden");
+  el("btnMuatLebih").classList.add("hidden");
+  box.innerHTML = '<p class="muted">Memuat peta kebutuhan…</p>';
+  var prov = S.provinsi;
+  var daftarWilayah = [];
+  if(prov){
+    daftarWilayah = (WILAYAH[prov] || []).map(function(k){ return {label:k, provinsi:prov, kota:k}; });
+  }else{
+    daftarWilayah = Object.keys(WILAYAH).map(function(p){ return {label:p, provinsi:p, kota:null}; });
+  }
+  if(S.peran && S.peran !== "pemilik" && S.kotaTugas){
+    daftarWilayah = daftarWilayah.filter(function(w){ return w.kota === S.kotaTugas; });
+  }
+  S.petaDaftar = daftarWilayah;
+  S.petaTampil = 10;
+  var hasil = await renderPetaBatch();
+  return hasil;
+}
+async function renderPetaBatch(){
+  var box = el("petaIsi");
+  var tampil = S.petaDaftar.slice(0, S.petaTampil);
+  var hasilList = [];
+  try{
+    hasilList = await Promise.all(tampil.map(function(w){ return muatAgregat(w.provinsi, w.kota); }));
+  }catch(e){
+    box.innerHTML = '<p class="muted">Peta belum bisa dimuat.</p>';
+    tampilPopup("Belum bisa memuat", pesanRamah(e));
+    return {ok:false, error:e};
+  }
+  var adaSetup = hasilList.some(function(h){ return h && h.setup; });
+  if(adaSetup){
+    box.innerHTML = pesanSetupHtml() + tombolContohHtml("peta");
+    return {ok:false, setup:true};
+  }
+  var adaError = hasilList.find(function(h){ return h && !h.ok; });
+  if(adaError){
+    box.innerHTML = '<p class="muted">Peta belum bisa dimuat.</p>';
+    tampilPopup("Belum bisa memuat", pesanRamah(adaError.error));
+    return adaError;
+  }
+  var html = '<div class="peta-grid">';
+  var tabel = '<h3>Tiga kebutuhan teratas per wilayah</h3><table><tr><th>Wilayah</th><th>Kebutuhan teratas</th></tr>';
+  var adaData = false;
+  tampil.forEach(function(w, i){
+    var d = hasilList[i] && hasilList[i].data;
+    if(!d || (d.n || 0) < AMBANG){
+      html += '<div class="peta-sel kosong"><div class="w">' + esc(w.label) + '</div><div class="d">Belum cukup data</div></div>';
+      tabel += '<tr><td>' + esc(w.label) + '</td><td>Belum cukup data untuk kelompok ini</td></tr>';
+      return;
+    }
+    adaData = true;
+    var keb = Array.isArray(d.kebutuhan) ? d.kebutuhan : [];
+    var dom = d.kebutuhan_dominan || (keb[0] && keb[0].jenis) || null;
+    var warna = KEBUTUHAN_WARNA[dom] || "#888";
+    html += '<div class="peta-sel" style="background:' + warna + '"><div class="w">' + esc(w.label) + '</div><div class="d">Dominan: ' + esc(KEBUTUHAN_LABEL[dom] || dom || "—") + '</div></div>';
+    var atas = keb.slice(0,3).map(function(k){ return (KEBUTUHAN_LABEL[k.jenis] || k.jenis) + ' (' + fmtBil(k.jumlah) + ' UMKM)'; }).join('<br>');
+    tabel += '<tr><td>' + esc(w.label) + '</td><td>' + atas + '</td></tr>';
+  });
+  html += '</div>';
+  tabel += '</table>';
+  box.innerHTML = html;
+  el("petaTabel").innerHTML = tabel;
+  if(S.petaDaftar.length > S.petaTampil){
+    el("btnMuatLebih").classList.remove("hidden");
+    el("btnMuatLebih").textContent = "Muat lebih banyak (" + (S.petaDaftar.length - S.petaTampil) + " wilayah lagi)";
+  }else{
+    el("btnMuatLebih").classList.add("hidden");
+  }
+  if(adaData) catatLihatAgregat();
+  return {ok:true};
+}
+function renderContohPeta(){
+  var html = spandukContoh() + '<div class="card"><div class="peta-grid">';
+  CONTOH.peta.forEach(function(w){
+    html += '<div class="peta-sel" style="background:' + KEBUTUHAN_WARNA[w.dominan] + '"><div class="w">' + esc(w.wilayah) + '</div><div class="d">Dominan: ' + esc(KEBUTUHAN_LABEL[w.dominan]) + '</div></div>';
+  });
+  html += '</div><h3>Tiga kebutuhan teratas per wilayah (contoh)</h3><table><tr><th>Wilayah</th><th>Kebutuhan teratas</th></tr>';
+  CONTOH.peta.forEach(function(w){
+    html += '<tr><td>' + esc(w.wilayah) + '</td><td>' + w.atas.map(function(k){ return (KEBUTUHAN_LABEL[k.jenis] || k.jenis) + ' (' + fmtBil(k.jumlah) + ' UMKM)'; }).join('<br>') + '</td></tr>';
+  });
+  html += '</table><p class="muted" style="margin-top:10px">Skema ilustratif dari brosur — bukan peta wilayah nyata dan bukan data nyata. Warna menunjukkan kebutuhan dominan, bukan nilai atau peringkat wilayah.</p>'
+    + '<p style="margin-top:10px"><button type="button" class="ghost kecil" data-tutup-contoh="peta">Tutup contoh</button></p></div>';
+  el("contohPeta").innerHTML = html;
+  el("contohPeta").classList.remove("hidden");
+}
+
+/* ===== Layar 4: Kelompok siap investasi ===== */
+async function muatSiap(){
+  var box = el("siapIsi");
+  el("contohSiap").classList.add("hidden");
+  box.innerHTML = '<p class="muted">Memuat kelompok siap investasi…</p>';
+  var hasil = await muatAgregat(S.provinsi, S.kota);
+  if(!hasil.ok){
+    if(hasil.setup){ box.innerHTML = pesanSetupHtml() + tombolContohHtml("siap"); }
+    else { box.innerHTML = '<p class="muted">Kelompok siap investasi belum bisa dimuat.</p>'; tampilPopup("Belum bisa memuat", pesanRamah(hasil.error)); }
+    return hasil;
+  }
+  var d = hasil.data;
+  S.agregatTerakhir = d;
+  if(!cukupData(d) || !d.siap_investasi){
+    box.innerHTML = tombolContohHtml("siap");
+    return hasil;
+  }
+  var j = d.siap_investasi.jumlah;
+  box.innerHTML = '<div class="grid"><div class="stat"><div class="angka">' + fmtBil(j) + '</div><div class="lbl">UMKM melewati ambang kesiapan investasi (skor 70 atau lebih) dari ' + fmtBil(d.n) + ' UMKM di wilayah ini</div></div></div>'
+    + '<p style="margin-top:12px">Kelompok ini dapat difasilitasi ke forum temu mitra investasi. Kurasi dilakukan dinas tanpa membuka data mentah satu usaha pun.</p>';
+  catatLihatAgregat();
+  return hasil;
+}
+function renderContohSiap(){
+  var c = CONTOH.siap;
+  el("contohSiap").innerHTML = spandukContoh()
+    + '<div class="card"><div class="grid"><div class="stat"><div class="angka">' + fmtBil(c.jumlah) + '</div><div class="lbl">UMKM melewati ambang kesiapan investasi (contoh, dari ' + fmtBil(c.dari) + ' UMKM)</div></div></div>'
+    + '<p class="muted" style="margin-top:10px">Angka pada tampilan ini adalah data contoh dari brosur manfaat aplikasi.</p>'
+    + '<p style="margin-top:10px"><button type="button" class="ghost kecil" data-tutup-contoh="siap">Tutup contoh</button></p></div>';
+  el("contohSiap").classList.remove("hidden");
+}
+
+/* ===== Layar 5: Laporan triwulan ===== */
+async function muatLaporan(){
+  var box = el("laporanIsi");
+  el("contohLaporan").classList.add("hidden");
+  box.innerHTML = '<p class="muted">Menyusun laporan triwulan…</p>';
+  var hasil = await muatAgregat(S.provinsi, S.kota);
+  if(!hasil.ok){
+    if(hasil.setup){ box.innerHTML = pesanSetupHtml() + tombolContohHtml("laporan"); }
+    else { box.innerHTML = '<p class="muted">Laporan belum bisa disusun.</p>'; tampilPopup("Belum bisa memuat", pesanRamah(hasil.error)); }
+    return hasil;
+  }
+  var d = hasil.data;
+  S.agregatTerakhir = d;
+  if(!cukupData(d)){
+    box.innerHTML = tombolContohHtml("laporan");
+    return hasil;
+  }
+  var med = d.median || {};
+  var keb = Array.isArray(d.kebutuhan) ? d.kebutuhan : [];
+  var dom = d.kebutuhan_dominan || (keb[0] && keb[0].jenis) || null;
+  var siapJ = (d.siap_investasi && d.siap_investasi.jumlah != null) ? d.siap_investasi.jumlah : null;
+  var tren = Array.isArray(d.tren) ? d.tren.filter(function(t){ return t.median_kesehatan != null; }) : [];
+  var kalimatTren = tren.length >= 2
+    ? "Median skor kesehatan kohort bergerak dari " + fmtSkor(tren[0].median_kesehatan) + " menjadi " + fmtSkor(tren[tren.length-1].median_kesehatan) + " selama " + tren.length + " bulan terakhir."
+    : "Belum ada data tren yang cukup untuk wilayah ini.";
+  box.innerHTML = '<h3>Ringkasan untuk pimpinan — ' + esc(labelWilayah()) + '</h3>'
+    + '<p>Di wilayah ini, <strong>' + fmtBil(d.n) + ' UMKM</strong> aktif mencatat. Median skor kesehatan usaha <strong>' + fmtSkor(med.kesehatan) + '</strong>, median Skor Siap Investasi <strong>' + fmtSkor(med.siap_investasi) + '</strong>, dan median skor konsistensi <strong>' + fmtSkor(med.konsistensi) + '</strong>.</p>'
+    + '<p style="margin-top:8px">' + esc(kalimatTren) + '</p>'
+    + '<p style="margin-top:8px">Kebutuhan dominan di wilayah ini adalah <strong>' + esc(KEBUTUHAN_LABEL[dom] || "belum dapat ditentukan") + '</strong>'
+    + (dom ? ' — program yang cocok: ' + esc(KEBUTUHAN_PROGRAM[dom] || "") + '.' : '.') + '</p>'
+    + '<p style="margin-top:8px">' + (siapJ != null
+        ? 'Sebanyak <strong>' + fmtBil(siapJ) + ' UMKM</strong> melewati ambang kesiapan investasi dan dapat difasilitasi ke forum temu mitra investasi.'
+        : 'Kelompok siap investasi belum dapat dihitung untuk wilayah ini.') + '</p>'
+    + '<p class="muted" style="margin-top:10px">Laporan ini hanya berisi angka agregat. Tidak ada nama usaha, kontak, atau data satu usaha pun di dalamnya.</p>';
+  catatLihatAgregat();
+  return hasil;
+}
+function renderContohLaporan(){
+  el("contohLaporan").innerHTML = spandukContoh()
+    + '<div class="card"><h3>Ringkasan untuk pimpinan (contoh)</h3><p>' + esc(CONTOH.laporan.kalimat) + '</p>'
+    + '<p class="muted" style="margin-top:10px">Angka pada tampilan ini adalah data contoh dari brosur manfaat aplikasi.</p>'
+    + '<p style="margin-top:10px"><button type="button" class="ghost kecil" data-tutup-contoh="laporan">Tutup contoh</button></p></div>';
+  el("contohLaporan").classList.remove("hidden");
+}
+async function cetakLaporan(){
+  await catatLog("ekspor_laporan", "Laporan triwulan — " + labelWilayah());
+  if(typeof window.print === "function"){ try{ window.print(); }catch(e){} }
+  return {ok:true};
+}
+
+/* ===== Tampilkan contoh / tutup contoh ===== */
+var RENDER_CONTOH = {ringkasan:renderContohRingkasan, tren:renderContohTren, peta:renderContohPeta, siap:renderContohSiap, laporan:renderContohLaporan};
+function tampilContoh(layar){
+  S.contohAktif[layar] = true;
+  var fn = RENDER_CONTOH[layar];
+  if(fn) fn();
+}
+function tutupContoh(layar){
+  S.contohAktif[layar] = false;
+  var box = el("contoh" + layar.charAt(0).toUpperCase() + layar.slice(1));
+  if(box){ box.classList.add("hidden"); box.innerHTML = ""; }
+}
+async function muatLayarAktif(){
+  if(S.layar === "ringkasan") return muatRingkasan();
+  if(S.layar === "tren") return muatTren();
+  if(S.layar === "peta") return muatPeta();
+  if(S.layar === "siap") return muatSiap();
+  if(S.layar === "laporan") return muatLaporan();
+  return {ok:false};
+}
+
+/* ===== Init & event ===== */
+function bindEvents(){
+  el("btnPopupTutup").addEventListener("click", tutupPopup);
+  el("popupOverlay").addEventListener("click", function(e){ if(e.target === el("popupOverlay")) tutupPopup(); });
+  el("btnMasuk").addEventListener("click", async function(){ await masuk(el("emailMasuk").value, el("sandiMasuk").value); });
+  el("btnKeDaftar").addEventListener("click", function(){ tampilPanel("panelDaftar"); });
+  el("btnBatalDaftar").addEventListener("click", function(){ tampilPanel("panelMasuk"); });
+  el("btnDaftar").addEventListener("click", async function(){ await daftar(el("emailDaftar").value, el("sandiDaftar").value); });
+  el("btnKeLupa").addEventListener("click", function(){ tampilPanel("panelLupa"); });
+  el("btnBatalLupa").addEventListener("click", function(){ tampilPanel("panelMasuk"); });
+  el("btnKirimLupa").addEventListener("click", async function(){ await lupaSandi(el("emailLupa").value); });
+  el("btnKeluar").addEventListener("click", keluar);
+  el("selProvinsi").addEventListener("change", function(){ S.provinsi = el("selProvinsi").value; S.kota = ""; isiKota(); });
+  el("btnMuatWilayah").addEventListener("click", async function(){ bacaWilayahTerpilih(); await muatLayarAktif(); });
+  document.querySelectorAll("#tabbar button").forEach(function(b){
+    b.addEventListener("click", async function(){
+      tampilLayar(b.getAttribute("data-layar"));
+      bacaWilayahTerpilih();
+      await muatLayarAktif();
+    });
+  });
+  el("btnMuatLebih").addEventListener("click", async function(){
+    S.petaTampil += 10;
+    await renderPetaBatch();
+  });
+  el("btnCetak").addEventListener("click", cetakLaporan);
+  el("btnContohLaporan").addEventListener("click", function(){ tampilContoh("laporan"); });
+  document.addEventListener("click", function(e){
+    var t = e.target;
+    if(t && t.getAttribute){
+      var c = t.getAttribute("data-contoh");
+      if(c){ tampilContoh(c); return; }
+      var tc = t.getAttribute("data-tutup-contoh");
+      if(tc){ tutupContoh(tc); return; }
+    }
+  });
+  document.addEventListener("keydown", function(e){ if(e.key === "Enter" && !el("layarMasuk").classList.contains("hidden")){ /* biarkan tombol yang fokus */ } });
+}
+async function init(){
+  bindEvents();
+  isiProvinsi();
+  var c = getClient();
+  if(c && c.auth && c.auth.getSession){
+    try{
+      var r = await c.auth.getSession();
+      var u = r && r.data && r.data.session && r.data.session.user;
+      if(u) await sesudahMasuk(u);
+    }catch(e){ /* tetap di layar masuk */ }
+  }
+}
+if(document.readyState === "loading"){ document.addEventListener("DOMContentLoaded", init); }
+else { init(); }
+
+/* Ekspos untuk pengujian otomatis */
+window.__pemda = {
+  S:S, AMBANG:AMBANG, AMBANG_SIAP:AMBANG_SIAP, PEMDA_URL:PEMDA_URL, EMAIL_PEMILIK:EMAIL_PEMILIK,
+  WILAYAH:WILAYAH, CONTOH:CONTOH,
+  setClient:function(m){ __client = m; },
+  getClient:getClient,
+  masuk:masuk, daftar:daftar, lupaSandi:lupaSandi, keluar:keluar,
+  periksaAkses:periksaAkses, sesudahMasuk:sesudahMasuk,
+  catatLog:catatLog, catatLihatAgregat:catatLihatAgregat,
+  muatAgregat:muatAgregat, muatRingkasan:muatRingkasan, muatTren:muatTren,
+  muatPeta:muatPeta, renderPetaBatch:renderPetaBatch, muatSiap:muatSiap,
+  muatLaporan:muatLaporan, cetakLaporan:cetakLaporan,
+  tampilContoh:tampilContoh, tutupContoh:tutupContoh,
+  tampilLayar:tampilLayar, tampilDashboard:tampilDashboard,
+  isiProvinsi:isiProvinsi, isiKota:isiKota, bacaWilayahTerpilih:bacaWilayahTerpilih,
+  tampilPopup:tampilPopup, tutupPopup:tutupPopup, cukupData:cukupData,
+  apakahErrorSetup:apakahErrorSetup, normalisasiData:normalisasiData
+};
+</script>
+</body>
+</html>
