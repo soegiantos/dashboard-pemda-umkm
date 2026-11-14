@@ -116,6 +116,9 @@ nav.tabbar button.aktif{background:var(--gold);color:#1a1405;border-color:var(--
       <input type="email" id="emailDaftar" autocomplete="email" placeholder="nama@dinas.go.id">
       <label for="sandiDaftar">Kata sandi (minimal 6 karakter)</label>
       <input type="password" id="sandiDaftar" autocomplete="new-password" placeholder="Buat kata sandi">
+      <label for="kodeDaftar">Kode marketing (jika ada)</label>
+      <input type="text" id="kodeDaftar" autocomplete="off" maxlength="6" style="text-transform:uppercase" placeholder="contoh: UMKM30">
+      <p class="muted" style="margin-top:6px">Opsional — isi hanya bila Anda mendapat kode dari tim marketing.</p>
       <div class="row" style="margin-top:16px">
         <button id="btnDaftar" type="button">Daftar</button>
         <button id="btnBatalDaftar" type="button" class="ghost">Kembali masuk</button>
@@ -349,6 +352,22 @@ async function sesudahMasuk(u){
   S.user = u; S.email = email; S.peran = akses.peran;
   S.provinsiTugas = akses.provinsi || null; S.kotaTugas = akses.kota || null;
   S.logAgregat = {};
+  /* Kode marketing dari pendaftaran (bila pendaftaran menunggu konfirmasi):
+     tulis ke baris akses_pemda milik pengguna sendiri, hanya bila kolomnya
+     masih kosong — diambil dari data akun atau simpanan lokal. */
+  try{
+    var kodeMeta = (u.user_metadata && u.user_metadata.kode_marketing) || "";
+    var kodeLokal = "";
+    try{ kodeLokal = localStorage.getItem("pemda-kode-marketing") || ""; }catch(e2){}
+    var kodeSimpan = kodeMarketingBersih(kodeMeta || kodeLokal);
+    if(kodeSimpan){
+      var cc = getClient();
+      if(cc){
+        var upK = await cc.from("akses_pemda").update({kode_marketing: kodeSimpan}).eq("email", email).is("kode_marketing", null);
+        if(!upK.error){ try{ localStorage.removeItem("pemda-kode-marketing"); }catch(e3){} }
+      }
+    }
+  }catch(e){}
   await catatLog("masuk", "Peran " + labelPeran(akses.peran));
   tampilDashboard();
   return {ok:true, peran:akses.peran};
@@ -368,16 +387,48 @@ async function periksaAkses(email){
   if(!d || d.aktif !== true) return {ok:false, alasan:"tidak-terdaftar"};
   return {ok:true, peran:d.peran, provinsi:d.provinsi, kota:d.kota || null};
 }
+/* ---------- Kode marketing saat pendaftaran (opsional) — pola yang sama seperti aplikasi utama ----------
+   Format: tepat 6 huruf/angka. Dicek lewat fungsi cek_kode_marketing
+   di cloud. Gagal apa pun (tabel/fungsi belum dibuat, tidak ada
+   internet) = TIDAK PASTI, bukan "tidak ada" — pendaftaran tetap
+   lanjut dan kodenya disimpan apa adanya (fail-open). */
+function kodeMarketingBersih(s){
+  return String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+}
+async function cekKodeMarketing(kode){
+  try{
+    var r = await getClient().rpc("cek_kode_marketing", {p_kode: kode});
+    if(r.error) return {ada:true, takPasti:true};
+    return {ada:!!r.data, takPasti:false};
+  }catch(e){ return {ada:true, takPasti:true}; }
+}
 async function daftar(email, sandi){
   email = String(email||"").trim(); sandi = String(sandi||"");
   if(!email || !sandi){ tampilPopup("Belum lengkap","Isi email dan kata sandi, lalu coba lagi."); return {ok:false}; }
   if(sandi.length < 6){ tampilPopup("Kata sandi terlalu pendek","Buat kata sandi minimal 6 karakter."); return {ok:false}; }
   var c = getClient();
   if(!c){ tampilPopup("Fitur ini belum aktif","Fitur ini belum aktif — pengaturan cloud belum dijalankan. Coba lagi nanti."); return {ok:false, setup:true}; }
+  /* Kode marketing (opsional): format tepat 6 huruf/angka, lalu
+     dicek ke tabel marketing_kode. Kode tidak dikenal / tidak
+     aktif tidak memblokir pendaftaran — pengguna bisa memperbaiki
+     kodenya atau mengosongkan kolomnya lalu daftar lagi. Bila
+     tabel/fungsi belum dibuat, kode diterima apa adanya. */
+  var kodeMk = kodeMarketingBersih(el("kodeDaftar") ? el("kodeDaftar").value : "");
+  if(kodeMk){
+    if(!/^[A-Z0-9]{6}$/.test(kodeMk)){ tampilPopup("Kode marketingnya belum benar","Kode marketing terdiri dari 6 huruf atau angka, contoh: UMKM30. Periksa lagi kodenya, atau kosongkan kolomnya bila Anda tidak punya kode — pendaftaran tetap bisa lanjut."); return {ok:false}; }
+    var cekK = await cekKodeMarketing(kodeMk);
+    if(!cekK.ada && !cekK.takPasti){ tampilPopup("Kode marketing tidak ditemukan","Kode marketing tidak ditemukan atau sudah tidak aktif — periksa lagi kodenya, atau lanjutkan tanpa kode (kosongkan kolomnya). Pendaftaran tetap bisa lanjut."); return {ok:false}; }
+  }
   var r;
-  try{ r = await c.auth.signUp({email:email, password:sandi, options:{emailRedirectTo: PEMDA_URL}}); }
+  var opsiDaftar = {emailRedirectTo: PEMDA_URL};
+  if(kodeMk) opsiDaftar.data = {kode_marketing: kodeMk};
+  try{ r = await c.auth.signUp({email:email, password:sandi, options:opsiDaftar}); }
   catch(e){ tampilPopup("Tidak bisa mendaftar", pesanRamah(e)); return {ok:false}; }
   if(r.error){ tampilPopup("Tidak bisa mendaftar", pesanRamah(r.error)); return {ok:false, error:r.error}; }
+  /* Pendaftaran menunggu konfirmasi: kodenya dititipkan dulu — saat masuk
+     pertama kali (setelah akses diperiksa), kodenya ditulis ke baris
+     akses_pemda milik pengguna sendiri dari simpanan ini. */
+  try{ if(kodeMk) localStorage.setItem("pemda-kode-marketing", kodeMk); }catch(e){}
   tampilPopup("Periksa email Anda","Kami sudah mengirim tautan konfirmasi ke email Anda.\nBuka email itu dan ketuk tautannya, lalu masuk di sini.");
   return {ok:true};
 }
@@ -911,6 +962,7 @@ window.__pemda = {
   setClient:function(m){ __client = m; },
   getClient:getClient,
   masuk:masuk, daftar:daftar, lupaSandi:lupaSandi, keluar:keluar,
+  kodeMarketingBersih:kodeMarketingBersih, cekKodeMarketing:cekKodeMarketing,
   periksaAkses:periksaAkses, sesudahMasuk:sesudahMasuk,
   catatLog:catatLog, catatLihatAgregat:catatLihatAgregat,
   muatAgregat:muatAgregat, muatRingkasan:muatRingkasan, muatTren:muatTren,
