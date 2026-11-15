@@ -6,7 +6,7 @@
 <title>Dashboard Pemda — Aplikasi Introspeksi UMKM</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" integrity="sha384-uteMfOloLDGt042uDz+xHGF3ym63/WQ6rFq7murQRG8Ih7QrXGEGNtWd8688sb4O" crossorigin="anonymous"></script>
 <style>
-:root{--gold:#e3b959;--gold-soft:#f3d68a;--bg:#12100c;--surface:#1d1a14;--surface2:#26221a;--line:#3a3325;--ink:#f2ead8;--ink-soft:#c9bfa5;--ink-mut:#9a8f74;--ok:#7fc98a;--warn:#e0a35a}
+:root{--gold:#e3b959;--gold-soft:#f3d68a;--bg:#12100c;--surface:#1d1a14;--surface2:#26221a;--line:#3a3325;--ink:#f2ead8;--ink-soft:#c9bfa5;--ink-mut:#9a8f74;--ok:#7fc98a;--warn:#e0a35a;--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.55;min-height:100vh}
 a{color:var(--gold)}
@@ -24,13 +24,28 @@ header.app-head .lab{color:var(--ink-mut);font-size:.85rem;margin-top:10px;line-
 label{display:block;font-size:.92rem;color:var(--ink-soft);margin:12px 0 4px}
 input[type=email],input[type=password],input[type=text],select{width:100%;background:#14110c;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:11px 12px;font-size:1rem}
 input:focus,select:focus{outline:2px solid var(--gold);outline-offset:1px}
-button{cursor:pointer;font-size:1rem;border-radius:10px;padding:11px 18px;border:1px solid var(--gold);background:var(--gold);color:#1a1405;font-weight:600}
+button{cursor:pointer;font-size:1rem;border-radius:999px;padding:11px 18px;border:1px solid var(--gold);background:var(--gold);color:#1a1405;font-weight:600;min-height:48px;box-shadow:var(--shadow);transition:background .18s ease,border-color .18s ease,color .18s ease,box-shadow .18s ease,transform .18s ease,filter .18s ease}
 button.ghost{background:transparent;color:var(--gold)}
 button.kecil{padding:7px 12px;font-size:.9rem}
 button:disabled{opacity:.55;cursor:default}
-.linkbtn{background:none;border:none;color:var(--gold);text-decoration:underline;padding:6px 2px;font-size:.95rem}
+button:hover{filter:brightness(1.07);transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,.4),0 14px 28px -12px rgba(0,0,0,.65)}
+button:active{transform:scale(.98);filter:brightness(.94)}
+button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+/* Tombol yang sudah diketuk: EMAS, menetap (lihat modul "TOMBOL MODERN" di
+   skrip). Aksi sekali pakai (Masuk/Daftar/Kirim/Keluar/Tampilkan/Cetak/
+   Mengerti) TIDAK pernah mendapat kelas ini — hanya umpan-balik tekan
+   sesaat di atas. */
+button.sudah-diklik{background:var(--gold);border-color:var(--gold);color:#1a1405}
+button.ghost.sudah-diklik{background:var(--gold);border-color:var(--gold);color:#1a1405}
+nav.tabbar button.sudah-diklik{background:var(--gold);border-color:var(--gold);color:#1a1405}
+button.linkbtn.sudah-diklik{background:var(--gold);border-color:var(--gold);color:#1a1405}
+.linkbtn{background:none;border:none;box-shadow:none;color:var(--gold);text-decoration:underline;padding:6px 2px;font-size:.95rem}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .row>*{flex:1 1 auto}
+/* Ukuran tombol sebaris disamakan: tombol dalam satu .row punya lebar
+   minimum dan tinggi yang sama, tidak membungkus — bila satu label
+   membungkus dua baris, yang lain tidak ikut terjepit. */
+.row button{flex:none;min-width:84px;white-space:nowrap}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:12px}
 .stat{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:14px}
 .stat .angka{font-size:1.55rem;font-weight:700;color:var(--gold);line-height:1.2}
@@ -75,6 +90,7 @@ nav.tabbar button.aktif{background:var(--gold);color:#1a1405;border-color:var(--
 .popup-card .aksi{margin-top:16px;text-align:right}
 .footnote{margin-top:26px;text-align:center;color:var(--ink-mut);font-size:.83rem;line-height:1.6}
 .hidden{display:none!important}
+@media(max-width:820px){button{min-height:52px}}
 @media print{
   body{background:#fff;color:#000}
   .no-print{display:none!important}
@@ -974,6 +990,85 @@ window.__pemda = {
   tampilPopup:tampilPopup, tutupPopup:tutupPopup, cukupData:cukupData,
   apakahErrorSetup:apakahErrorSetup, normalisasiData:normalisasiData
 };
+</script>
+<script>
+"use strict";
+/* ===== TOMBOL MODERN: tombol yang sudah diketuk = EMAS, menetap =====
+   SATU pendengar klik terdelegasi (capture): tombol navigasi/penjelajahan
+   yang diketuk mendapat kelas .sudah-diklik dan warnanya berubah jadi emas
+   — tetap emas sampai kapan pun, supaya terlihat mana yang sudah pernah
+   ditekan. Aksi sekali pakai (Masuk/Daftar/Kirim tautan/Keluar/Tampilkan/
+   Muat lebih banyak/Cetak laporan/Mengerti) TIDAK pernah mendapat kelas
+   ini — mereka hanya mendapat umpan-balik tekan sesaat (:active di CSS),
+   karena sesudah aksi popup tertutup, layar berganti, atau laporan dicetak.
+   Keadaan semantik SELALU menang: tombol dengan aria-pressed="true" tidak
+   pernah ditandai, dan tab yang sedang aktif (.aktif) sudah emas dari
+   aturannya sendiri. Kunci simpan TIDAK memakai teks tombol. */
+(function(){
+  var KUNCI_TOMBOL="pemda-tombol-diklik:v1";
+  /* Tombol bernama yang termasuk kelompok navigasi/penjelajahan
+     (bukan aksi sekali pakai). ID di luar daftar ini tidak pernah
+     ditandai emas. */
+  var ID_NAVIGASI=["btnKeDaftar","btnBatalDaftar","btnKeLupa","btnBatalLupa","btnContohLaporan"];
+  function bacaSet(){ try{ var s=localStorage.getItem(KUNCI_TOMBOL); if(!s) return {}; var o=JSON.parse(s); return (o&&typeof o==="object")?o:{}; }catch(e){ return {}; } }
+  function simpanSet(o){ try{ localStorage.setItem(KUNCI_TOMBOL, JSON.stringify(o)); }catch(e){} }
+  function bolehDitandai(el){
+    if(!el||el.nodeType!==1) return false;
+    /* Togel: keadaan semantiknya sendiri sudah menetap. */
+    if(el.hasAttribute("aria-pressed")) return false;
+    if(el.tagName==="BUTTON"&&el.type==="submit") return false;
+    /* Tab navigasi antar-layar dashboard. */
+    if(el.closest&&el.closest("nav.tabbar")) return true;
+    /* Tombol "Lihat contoh" / "Tutup contoh" yang dibuat JS. */
+    if(el.hasAttribute("data-contoh")||el.hasAttribute("data-tutup-contoh")) return true;
+    if(el.id&&ID_NAVIGASI.indexOf(el.id)>=0) return true;
+    return false;
+  }
+  function kunciTombol(el){
+    if(!el||el.nodeType!==1) return null;
+    if(el.id) return "id:"+el.id;
+    var v;
+    if((v=el.getAttribute("data-layar"))) return "layar:"+v;
+    if((v=el.getAttribute("data-contoh"))) return "contoh:"+v;
+    if((v=el.getAttribute("data-tutup-contoh"))) return "tutup-contoh:"+v;
+    return null;
+  }
+  function terapkanDariSimpanan(){
+    var simpan=bacaSet();
+    var daftar=Object.keys(simpan);
+    if(!daftar.length) return;
+    var ada={}; daftar.forEach(function(k){ ada[k]=1; });
+    document.querySelectorAll("button, a").forEach(function(el){
+      if(!bolehDitandai(el)) return;
+      var k=kunciTombol(el);
+      if(k&&ada[k]) el.classList.add("sudah-diklik");
+    });
+  }
+  document.addEventListener("click", function(ev){
+    var t=ev.target&&ev.target.closest?ev.target.closest("button, a"):null;
+    if(!t||!document.contains(t)) return;
+    if(!bolehDitandai(t)) return;
+    t.classList.add("sudah-diklik");
+    var k=kunciTombol(t);
+    if(!k) return; /* tanpa kunci stabil: hanya sesi ini saja */
+    var simpan=bacaSet();
+    if(!simpan[k]){ simpan[k]=1; simpanSet(simpan); }
+  }, true);
+  terapkanDariSimpanan();
+  /* Tombol yang dibuat belakangan oleh JS (tombol "Lihat contoh" /
+     "Tutup contoh") ikut ditandai ulang begitu muncul — dijadwalkan
+     sekali per gugus perubahan supaya tidak berjalan tiap tombol. */
+  var terjadwal=false;
+  function jadwalkanTerapkan(){
+    if(terjadwal) return; terjadwal=true;
+    setTimeout(function(){ terjadwal=false; terapkanDariSimpanan(); }, 300);
+  }
+  if(window.MutationObserver){
+    var mo=new MutationObserver(function(){ jadwalkanTerapkan(); });
+    mo.observe(document.body, {childList:true, subtree:true});
+  }
+  window.__tombolDiklik={kunci:kunciTombol, boleh:bolehDitandai, terapkan:terapkanDariSimpanan, kunciSimpan:KUNCI_TOMBOL};
+})();
 </script>
 </body>
 </html>
