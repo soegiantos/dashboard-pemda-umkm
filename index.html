@@ -28,6 +28,7 @@ button{cursor:pointer;font-size:1rem;border-radius:999px;padding:11px 18px;borde
 button.ghost{background:transparent;color:var(--gold)}
 button.kecil{padding:7px 12px;font-size:.9rem}
 button:disabled{opacity:.55;cursor:default}
+button[aria-disabled="true"]{opacity:.55;cursor:default}
 button:hover{filter:brightness(1.07);transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,.4),0 14px 28px -12px rgba(0,0,0,.65)}
 button:active{transform:scale(.98);filter:brightness(.94)}
 button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
@@ -68,6 +69,10 @@ nav.tabbar button.aktif{background:var(--gold);color:#1a1405;border-color:var(--
 .wilayah-bar>div{flex:1 1 200px}
 .belum-cukup{background:var(--surface2);border:1px dashed var(--gold);border-radius:12px;padding:18px;text-align:center;margin-top:14px}
 .belum-cukup p{color:var(--ink-soft)}
+.panduan-awal{background:var(--surface2);border:1.5px solid var(--gold);border-radius:12px;padding:18px;margin-top:14px}
+.panduan-awal h3{color:var(--gold);font-size:1.1rem;margin-bottom:8px}
+.panduan-awal ol{margin:6px 0 0 20px;color:var(--ink-soft)}
+.panduan-awal li{margin:6px 0}
 .spanduk-contoh{background:#3a2f10;border:1px solid var(--gold);color:var(--gold-soft);border-radius:10px;padding:10px 14px;font-weight:700;text-align:center;margin-top:14px}
 .contoh-box{margin-top:12px}
 .contoh-box .card{border-color:var(--gold)}
@@ -91,6 +96,9 @@ nav.tabbar button.aktif{background:var(--gold);color:#1a1405;border-color:var(--
 .footnote{margin-top:26px;text-align:center;color:var(--ink-mut);font-size:.83rem;line-height:1.6}
 .hidden{display:none!important}
 @media(max-width:820px){button{min-height:52px}}
+/* Layar kecil (HP 360px): label batang ditumpuk DI ATAS batang supaya
+   batang mendapat lebar penuh, bukan terjepit label 190px. */
+@media(max-width:520px){.bar-row{flex-wrap:wrap;gap:4px 10px}.bar-row .nm{flex:1 1 100%;width:auto}.bar-row .bar{flex:1 1 auto}.bar-row .nil{flex:0 0 auto;width:auto}}
 @media print{
   body{background:#fff;color:#000}
   .no-print{display:none!important}
@@ -114,7 +122,7 @@ nav.tabbar button.aktif{background:var(--gold);color:#1a1405;border-color:var(--
       <h2>Masuk Dashboard Pemda</h2>
       <p>Dashboard ini hanya untuk dinas, pendamping, dan pemilik aplikasi. Data yang tampil di sini hanya angka agregat wilayah — jumlah, median, dan sebaran. Tidak ada data satu usaha pun yang dibuka.</p>
       <label for="emailMasuk">Email</label>
-      <input type="email" id="emailMasuk" autocomplete="email" placeholder="nama@dinas.go.id">
+      <input type="email" id="emailMasuk" autocomplete="email" placeholder="contoh: nama@dinas.go.id">
       <label for="sandiMasuk">Kata sandi</label>
       <input type="password" id="sandiMasuk" autocomplete="current-password" placeholder="Kata sandi Anda">
       <div class="row" style="margin-top:16px">
@@ -129,7 +137,7 @@ nav.tabbar button.aktif{background:var(--gold);color:#1a1405;border-color:var(--
       <h2>Daftar akun baru</h2>
       <p>Setelah mendaftar, buka email Anda dan ketuk tautan konfirmasi sebelum masuk pertama kali. Pendaftaran saja belum memberi akses: akun Anda harus didaftarkan dulu sebagai pengguna Dashboard Pemda oleh pemilik aplikasi.</p>
       <label for="emailDaftar">Email</label>
-      <input type="email" id="emailDaftar" autocomplete="email" placeholder="nama@dinas.go.id">
+      <input type="email" id="emailDaftar" autocomplete="email" placeholder="contoh: nama@dinas.go.id">
       <label for="sandiDaftar">Kata sandi (minimal 6 karakter)</label>
       <input type="password" id="sandiDaftar" autocomplete="new-password" placeholder="Buat kata sandi">
       <label for="kodeDaftar">Kode marketing (jika ada)</label>
@@ -146,10 +154,24 @@ nav.tabbar button.aktif{background:var(--gold);color:#1a1405;border-color:var(--
       <h2>Lupa kata sandi?</h2>
       <p>Masukkan email akun Anda. Kami akan mengirim tautan untuk membuat kata sandi baru.</p>
       <label for="emailLupa">Email</label>
-      <input type="email" id="emailLupa" autocomplete="email" placeholder="nama@dinas.go.id">
+      <input type="email" id="emailLupa" autocomplete="email" placeholder="contoh: nama@dinas.go.id">
       <div class="row" style="margin-top:16px">
         <button id="btnKirimLupa" type="button">Kirim tautan</button>
         <button id="btnBatalLupa" type="button" class="ghost">Kembali masuk</button>
+      </div>
+    </div>
+
+    <div class="card hidden" id="panelSandiBaru">
+      <h2>Buat kata sandi baru</h2>
+      <p>Masukkan kata sandi baru untuk akun Anda.</p>
+      <label for="sandiBaru">Kata sandi baru (minimal 6 karakter)</label>
+      <input type="password" id="sandiBaru" autocomplete="new-password" placeholder="Buat kata sandi baru">
+      <label for="sandiBaru2">Ulangi kata sandi baru</label>
+      <input type="password" id="sandiBaru2" autocomplete="new-password" placeholder="Ketik ulang kata sandi baru">
+      <p class="muted" style="margin-top:10px">Kata sandi ini khusus untuk aplikasi ini, bukan kata sandi email Anda.</p>
+      <div class="row" style="margin-top:16px">
+        <button id="btnSimpanSandi" type="button">Simpan kata sandi baru</button>
+        <button id="btnBatalSandiBaru" type="button" class="ghost">Kembali masuk</button>
       </div>
     </div>
   </section>
@@ -237,7 +259,7 @@ nav.tabbar button.aktif{background:var(--gold);color:#1a1405;border-color:var(--
         <p class="muted" id="laporanWilayahLabel"></p>
         <div id="laporanIsi"><p class="muted">Pilih wilayah lalu ketuk "Tampilkan".</p></div>
         <div class="row no-print" style="margin-top:14px">
-          <button id="btnCetak" type="button">Cetak laporan</button>
+          <button id="btnCetak" type="button" aria-disabled="true">Cetak laporan</button>
           <button id="btnContohLaporan" type="button" class="ghost">Lihat contoh</button>
         </div>
         <div id="contohLaporan" class="contoh-box hidden"></div>
@@ -285,7 +307,7 @@ function labelPeran(p){ return p==="pemilik"?"Pemilik aplikasi":p==="pendamping"
 /* ===== State & client ===== */
 var S = { user:null, email:null, peran:null, provinsiTugas:null, kotaTugas:null,
   provinsi:"", kota:"", layar:"ringkasan", logAgregat:{}, petaTampil:10,
-  petaDaftar:[], agregatTerakhir:null, contohAktif:{} };
+  petaDaftar:[], agregatTerakhir:null, contohAktif:{}, laporanSiap:false };
 var __client = null;
 function getClient(){
   if(__client) return __client;
@@ -308,6 +330,7 @@ function pesanRamah(err){
   if(/email not confirmed|not confirmed/i.test(m)) return "Email Anda belum dikonfirmasi.\nBuka email Anda dan ketuk tautan konfirmasi yang kami kirim, lalu masuk kembali.";
   if(/too many requests|rate limit|email rate limit/i.test(m)) return "Terlalu banyak percobaan barusan.\nTunggu sebentar, lalu coba lagi.";
   if(/network|failed to fetch|load failed/i.test(m)) return "Tidak bisa terhubung ke cloud.\nPeriksa koneksi internet Anda, lalu coba lagi.";
+  if(/permission denied|not authorized|tidak diizinkan|akses ditolak|insufficient privilege|42501/i.test(m)) return "Akses Anda ke data ini tidak diizinkan.\nHubungi pemilik aplikasi bila Anda merasa ini keliru.";
   if(/user already registered|already registered/i.test(m)) return "Email ini sudah terdaftar.\nSilakan masuk, atau pakai \"Lupa kata sandi?\" bila Anda lupa kata sandinya.";
   if(/password should be at least/i.test(m)) return "Kata sandi terlalu pendek.\nBuat kata sandi minimal 6 karakter.";
   return "Terjadi kendala saat memproses permintaan Anda.\nCoba lagi sebentar lagi. Bila masih gagal, hubungi pemilik aplikasi.";
@@ -315,6 +338,50 @@ function pesanRamah(err){
 function apakahErrorSetup(err){
   var m = String((err && err.message) || err || "") + " " + String((err && err.code) || "");
   return /does not exist|relation .* does not|function .* does not|42P01|42883|PGRST202|table .* not found|column .* does not exist/i.test(m);
+}
+/* Penolakan akses dari RPC agregat_pemda (kontrak FASE 2: RPC memeriksa
+   akses pemanggil) — dibedakan dari galat setup supaya pesannya jelas. */
+function apakahErrorAkses(err){
+  if(!err) return false;
+  if(err.status === 403 || err.code === "42501" || err.code === "PGRST301") return true;
+  var m = String((err && err.message) || err || "");
+  return /permission denied|not authorized|tidak diizinkan|akses ditolak|insufficient privilege|42501/i.test(m);
+}
+
+/* ===== Tombol Cetak laporan (U-B31) & periode laporan (U-B39) ===== */
+function aturTombolCetak(siap){
+  S.laporanSiap = !!siap;
+  var b = el("btnCetak");
+  if(b){
+    if(siap){ b.removeAttribute("aria-disabled"); }
+    else { b.setAttribute("aria-disabled", "true"); }
+  }
+}
+var NAMA_BULAN = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+function periodeTriwulan(tgl){
+  var d = tgl || new Date();
+  var q = Math.floor(d.getMonth() / 3);
+  return "Triwulan " + ["I","II","III","IV"][q] + " " + d.getFullYear() + " (" + NAMA_BULAN[q*3] + "–" + NAMA_BULAN[q*3+2] + " " + d.getFullYear() + ")";
+}
+function tanggalLaporan(tgl){
+  var d = tgl || new Date();
+  return d.getDate() + " " + NAMA_BULAN[d.getMonth()] + " " + d.getFullYear();
+}
+/* Hitungan agregat: angka mentah hanya tampil bila n>=5 (ambang yang sama
+   dengan metrik lain); di bawah itu hanya "Kurang dari 5". */
+function fmtHitungAgregat(n){
+  if(n == null || isNaN(n)) return "—";
+  if(n < AMBANG) return "Kurang dari 5";
+  return fmtBil(n);
+}
+/* Isi sel median per bulan: median tampil hanya bila cukup data bulan itu;
+   bila tidak, dibedakan antara belum ada data dan kurang dari 5 usaha. */
+function isiSelMedian(t, kunci){
+  var v = t ? t[kunci] : null;
+  if(v != null) return fmtSkor(v);
+  if(!t || t.n == null || t.n === 0) return "Belum ada data bulan ini";
+  if(t.n < AMBANG) return "Kurang dari 5 usaha bulan ini";
+  return "Belum ada data bulan ini";
 }
 
 /* ===== Data contoh (jalur terpisah dari data nyata; selalu berlabel) ===== */
@@ -336,7 +403,28 @@ var CONTOH = {
   laporan: { kalimat:"Pada wilayah contoh, 1.240 UMKM aktif mencatat dari 1.860 terdaftar. Dalam 6 bulan, 18% usaha naik level dan median skor kesehatan kohort naik dari 62 menjadi 71. Kebutuhan terbanyak adalah Kemasan, diikuti Pencatatan keuangan dan Pemasaran digital. Sebanyak 214 usaha melewati ambang kesiapan investasi dan dapat difasilitasi ke forum temu mitra investasi." }
 };
 function spandukContoh(){ return '<div class="spanduk-contoh">Data contoh — angka ilustratif, bukan data nyata</div>'; }
-function tombolContohHtml(layar){ return '<div class="belum-cukup"><p>Belum cukup data untuk kelompok ini.</p><p class="muted" style="margin-top:6px">Kelompok dengan jumlah usaha kurang dari 5 tidak ditampilkan, agar tidak ada usaha yang dapat dikenali dari angkanya.</p><p style="margin-top:12px"><button type="button" class="ghost kecil" data-contoh="'+layar+'">Lihat contoh</button></p></div>'; }
+function tombolContohHtml(layar, alasan){
+  /* "kosong" = belum ada data sama sekali untuk wilayah ini;
+     "kurang" = ada data, tapi jumlah usaha kurang dari 5 — dua keadaan
+     yang berbeda, jadi pesannya dibedakan. Tanpa alasan (mis. pengaturan
+     cloud belum dijalankan) dipakai pesan lama yang netral. */
+  var judul, ket;
+  if(alasan === "kosong"){
+    judul = "Belum ada data untuk wilayah ini.";
+    ket = "Belum ada usaha yang tercatat di wilayah ini, atau datanya belum masuk. Coba wilayah lain, atau lihat contoh tampilan di bawah ini.";
+  }else if(alasan === "kurang"){
+    judul = "Kurang dari 5 usaha di wilayah ini.";
+    ket = "Kelompok dengan jumlah usaha kurang dari 5 tidak ditampilkan, agar tidak ada usaha yang dapat dikenali dari angkanya.";
+  }else{
+    judul = "Belum cukup data untuk kelompok ini.";
+    ket = "Kelompok dengan jumlah usaha kurang dari 5 tidak ditampilkan, agar tidak ada usaha yang dapat dikenali dari angkanya.";
+  }
+  return '<div class="belum-cukup"><p>' + judul + '</p><p class="muted" style="margin-top:6px">' + ket + '</p><p style="margin-top:12px"><button type="button" class="ghost kecil" data-contoh="'+layar+'">Lihat contoh</button></p></div>';
+}
+function alasanKurangData(d){
+  if(!d || (d.n || 0) === 0) return "kosong";
+  return "kurang";
+}
 function pesanSetupHtml(){ return '<div class="warn-box"><p><strong>Fitur ini belum aktif — pengaturan cloud belum dijalankan.</strong></p><p style="margin-top:6px">Data agregat wilayah belum bisa ditampilkan karena pengaturan cloud untuk dashboard ini belum dijalankan. Silakan hubungi pemilik aplikasi. Sementara itu, Anda tetap bisa melihat tampilan contoh di bawah ini.</p></div>'; }
 
 /* ===== Auth ===== */
@@ -385,7 +473,7 @@ async function sesudahMasuk(u){
     }
   }catch(e){}
   await catatLog("masuk", "Peran " + labelPeran(akses.peran));
-  tampilDashboard();
+  await tampilDashboard();
   return {ok:true, peran:akses.peran};
 }
 async function periksaAkses(email){
@@ -460,11 +548,40 @@ async function lupaSandi(email){
   tampilPopup("Tautan dikirim","Bila email itu terdaftar, tautan untuk membuat kata sandi baru sudah kami kirim.\nBuka email Anda dan ketuk tautannya.");
   return {ok:true};
 }
+/* Tautan atur ulang yang sudah tidak berlaku (kedaluwarsa, sudah pernah
+   dipakai, atau sesi atur ulangnya hilang): simpan kata sandi baru
+   pasti gagal — kenali dari pesan cloud-nya supaya pengguna mendapat
+   pesan jujur, bukan "coba lagi". */
+function apakahTautanKedaluarsa(err){
+  var m = String((err && err.message) || err || "");
+  return /otp_expired|expired|invalid token|token .*expired|session missing|invalid session|auth session missing/i.test(m);
+}
+async function simpanSandiBaru(a, b){
+  a = String(a||""); b = String(b||"");
+  if(a.length < 6){ tampilPopup("Kata sandi terlalu pendek","Buat kata sandi minimal 6 karakter."); return {ok:false}; }
+  if(a !== b){ tampilPopup("Kata sandi tidak sama","Ketik ulang kata sandi baru sama persis dengan yang pertama."); return {ok:false}; }
+  var c = getClient();
+  if(!c){ tampilPopup("Fitur ini belum aktif","Fitur ini belum aktif — pengaturan cloud belum dijalankan. Coba lagi nanti."); return {ok:false, setup:true}; }
+  var r;
+  try{ r = await c.auth.updateUser({password:a}); }
+  catch(e){
+    if(apakahTautanKedaluarsa(e)){ tampilPopup("Tautan sudah kedaluwarsa","Tautan sudah kedaluwarsa — minta tautan baru lewat 'Lupa kata sandi?'."); tampilPanel("panelLupa"); return {ok:false, kedaluwarsa:true}; }
+    tampilPopup("Belum bisa menyimpan", pesanRamah(e)); return {ok:false};
+  }
+  if(r.error){
+    if(apakahTautanKedaluarsa(r.error)){ tampilPopup("Tautan sudah kedaluwarsa","Tautan sudah kedaluwarsa — minta tautan baru lewat 'Lupa kata sandi?'."); tampilPanel("panelLupa"); return {ok:false, error:r.error, kedaluwarsa:true}; }
+    tampilPopup("Belum bisa menyimpan", pesanRamah(r.error)); return {ok:false, error:r.error};
+  }
+  tampilPopup("Kata sandi baru tersimpan","Kata sandi Anda sudah diganti. Silakan masuk dengan kata sandi baru.");
+  tampilPanel("panelMasuk");
+  return {ok:true};
+}
 async function keluar(){
   var c = getClient();
   if(c && c.auth && c.auth.signOut){ try{ await c.auth.signOut(); }catch(e){} }
   S.user = null; S.email = null; S.peran = null; S.provinsiTugas = null; S.kotaTugas = null;
   S.logAgregat = {}; S.agregatTerakhir = null;
+  aturTombolCetak(false);
   el("layarDashboard").classList.add("hidden");
   el("layarMasuk").classList.remove("hidden");
   tampilPanel("panelMasuk");
@@ -546,10 +663,12 @@ async function muatAgregat(prov, kota){
   try{ r = await c.rpc("agregat_pemda", {p_provinsi: prov || null, p_kota: kota || null}); }
   catch(e){
     if(apakahErrorSetup(e)) return {ok:false, setup:true, error:e};
+    if(apakahErrorAkses(e)) return {ok:false, ditolak:true, error:e};
     return {ok:false, error:e};
   }
   if(r.error){
     if(apakahErrorSetup(r.error)) return {ok:false, setup:true, error:r.error};
+    if(apakahErrorAkses(r.error)) return {ok:false, ditolak:true, error:r.error};
     return {ok:false, error:r.error};
   }
   return {ok:true, data: normalisasiData(r.data)};
@@ -571,16 +690,38 @@ function tampilLayar(nama){
   });
 }
 function tampilPanel(id){
-  ["panelMasuk","panelDaftar","panelLupa"].forEach(function(p){ el(p).classList.add("hidden"); });
+  ["panelMasuk","panelDaftar","panelLupa","panelSandiBaru"].forEach(function(p){ el(p).classList.add("hidden"); });
   el(id).classList.remove("hidden");
 }
-function tampilDashboard(){
+async function tampilDashboard(){
   el("layarMasuk").classList.add("hidden");
   el("layarDashboard").classList.remove("hidden");
   el("infoPeran").textContent = (S.email || "") + " — " + labelPeran(S.peran);
   isiProvinsi();
   bacaWilayahTerpilih();
   tampilLayar("ringkasan");
+  aturTombolCetak(false);
+  /* U-B30: pendamping/dinas satu wilayah langsung melihat datanya —
+     wilayah tugas dimuat otomatis begitu masuk. Pemilik (atau akun tanpa
+     wilayah tugas) mendapat panduan langkah pertama yang menonjol. */
+  if(S.peran && S.peran !== "pemilik" && S.provinsiTugas){
+    await muatLayarAktif();
+  }else{
+    tampilPanduanAwal();
+  }
+}
+/* Panduan langkah pertama untuk pemilik / akun tanpa wilayah tugas. */
+function tampilPanduanAwal(){
+  var box = el("ringkasanIsi");
+  if(!box) return;
+  var ketWilayah = S.peran === "pemilik"
+    ? "Anda masuk sebagai pemilik aplikasi — semua wilayah dapat dilihat."
+    : "Pilih wilayah tugas Anda di atas.";
+  box.innerHTML = '<div class="panduan-awal"><h3>Langkah pertama</h3>'
+    + '<ol><li>Pilih <strong>provinsi</strong> di atas.</li>'
+    + '<li>Pilih <strong>kabupaten / kota</strong>, atau biarkan "Semua kota di provinsi ini" untuk melihat seluruh provinsi.</li>'
+    + '<li>Ketuk <strong>"Tampilkan"</strong> — ringkasan wilayah langsung tersusun.</li></ol>'
+    + '<p class="muted" style="margin-top:10px">' + ketWilayah + '</p></div>';
 }
 </script>
 <script>
@@ -609,13 +750,14 @@ async function muatRingkasan(){
   var hasil = await muatAgregat(S.provinsi, S.kota);
   if(!hasil.ok){
     if(hasil.setup){ box.innerHTML = pesanSetupHtml() + tombolContohHtml("ringkasan"); }
+    else if(hasil.ditolak){ box.innerHTML = '<p class="muted">Akses ke data wilayah ini tidak diizinkan.</p>'; tampilPopup("Akses tidak diizinkan", pesanRamah(hasil.error)); }
     else { box.innerHTML = '<p class="muted">Ringkasan belum bisa dimuat.</p>'; tampilPopup("Belum bisa memuat", pesanRamah(hasil.error)); }
     return hasil;
   }
   var d = hasil.data;
   S.agregatTerakhir = d;
   if(!cukupData(d)){
-    box.innerHTML = tombolContohHtml("ringkasan");
+    box.innerHTML = tombolContohHtml("ringkasan", alasanKurangData(d));
     return hasil;
   }
   var med = d.median || {};
@@ -628,10 +770,16 @@ async function muatRingkasan(){
     + '</div>';
   html += '<h3>Sebaran level (skala usaha)</h3>' + htmlSebaran(d.sebaran_level, null);
   html += '<h3>Sebaran sektor</h3>' + htmlSebaran(d.sebaran_sektor, SEKTOR_LABEL);
-  if(kal && kal.n != null){
-    html += '<h3>Omzet tercatat agregat</h3><p>Median omzet tercatat: <strong>' + fmtRp(kal.median_omzet) + '</strong> per bulan'
-      + (kal.n >= AMBANG ? '' : ' (jumlah baris kalibrasi kurang dari 5, angka median belum ditampilkan)') + '.</p>'
+  /* U-B32: bila baris kalibrasi kurang dari 5, angka median omzet TIDAK
+     ditampilkan sama sekali — hanya pesan di bawah ini. */
+  html += '<h3>Omzet tercatat agregat</h3>';
+  if(kal && kal.n != null && kal.n >= AMBANG && kal.median_omzet != null){
+    html += '<p>Median omzet tercatat: <strong>' + fmtRp(kal.median_omzet) + '</strong> per bulan (dari ' + fmtBil(kal.n) + ' baris kalibrasi).</p>'
       + '<p class="muted">Angka ini adalah omzet yang tercatat di aplikasi, bukan klaim omzet seluruh daerah.</p>';
+  }else if(kal && kal.n != null){
+    html += '<p>Belum cukup data (kurang dari 5 baris kalibrasi).</p>';
+  }else{
+    html += '<p>Belum ada data omzet tercatat untuk wilayah ini.</p>';
   }
   box.innerHTML = html;
   catatLihatAgregat();
@@ -663,46 +811,64 @@ async function muatTren(){
   var hasil = await muatAgregat(S.provinsi, S.kota);
   if(!hasil.ok){
     if(hasil.setup){ box.innerHTML = pesanSetupHtml() + tombolContohHtml("tren"); }
+    else if(hasil.ditolak){ box.innerHTML = '<p class="muted">Akses ke data wilayah ini tidak diizinkan.</p>'; tampilPopup("Akses tidak diizinkan", pesanRamah(hasil.error)); }
     else { box.innerHTML = '<p class="muted">Tren belum bisa dimuat.</p>'; tampilPopup("Belum bisa memuat", pesanRamah(hasil.error)); }
     return hasil;
   }
   var d = hasil.data;
   S.agregatTerakhir = d;
   if(!cukupData(d)){
-    box.innerHTML = tombolContohHtml("tren");
+    box.innerHTML = tombolContohHtml("tren", alasanKurangData(d));
     return hasil;
   }
   var tren = Array.isArray(d.tren) ? d.tren : [];
   var kea = d.keaktifan || {};
   var kal = d.kalibrasi || {};
-  var html = "";
-  html += '<h3>1. Perpindahan level</h3>';
-  html += '<p>Belum ada data tren perpindahan level untuk wilayah ini. Perpindahan level dihitung dari kohort yang sama yang diukur berulang; datanya tampil setelah pencatatan kohort berjalan beberapa periode.</p>';
-  html += '<h3>2. Median skor per bulan (6 bulan terakhir)</h3>';
+  /* Bagian disusun dinamis dan diberi nomor berurutan: bagian tanpa data
+     disembunyikan sampai datanya ada (bukan menampilkan "Belum ada
+     data…" selamanya). */
+  var bagian = [];
+  var pindah = d.perpindahan_level;
+  if(pindah && (typeof pindah.naik_persen === "number" || typeof pindah === "number")){
+    var persenNaik = typeof pindah === "number" ? pindah : pindah.naik_persen;
+    var periodeBulan = (pindah && pindah.periode_bulan) || 6;
+    bagian.push({judul:"Perpindahan level",
+      isi:'<p><strong>' + persenNaik + '%</strong> usaha naik level dalam ' + periodeBulan + ' bulan pada kohort yang sama.</p>'});
+  }
+  var isiMedian = "";
   if(tren.length){
-    html += '<table><tr><th>Bulan</th><th>UMKM</th><th>Kesehatan</th><th>Siap Investasi</th><th>Konsistensi</th></tr>';
+    isiMedian += '<table><tr><th>Bulan</th><th>UMKM</th><th>Kesehatan</th><th>Siap Investasi</th><th>Konsistensi</th></tr>';
     tren.forEach(function(t){
-      html += '<tr><td>' + esc(t.bulan || "—") + '</td><td>' + fmtBil(t.n) + '</td><td>'
-        + (t.median_kesehatan == null ? 'Belum cukup data untuk bulan ini' : fmtSkor(t.median_kesehatan)) + '</td><td>'
-        + (t.median_siap_investasi == null ? 'Belum cukup data untuk bulan ini' : fmtSkor(t.median_siap_investasi)) + '</td><td>'
-        + (t.median_konsistensi == null ? 'Belum cukup data untuk bulan ini' : fmtSkor(t.median_konsistensi)) + '</td></tr>';
+      isiMedian += '<tr><td>' + esc(t.bulan || "—") + '</td><td>' + fmtBil(t.n) + '</td><td>'
+        + isiSelMedian(t, "median_kesehatan") + '</td><td>'
+        + isiSelMedian(t, "median_siap_investasi") + '</td><td>'
+        + isiSelMedian(t, "median_konsistensi") + '</td></tr>';
     });
-    html += '</table>';
+    isiMedian += '</table>';
   }else{
-    html += '<p>Belum ada data tren.</p>';
+    isiMedian = '<p>Belum ada data tren.</p>';
   }
-  html += '<h3>3. Keaktifan mencatat</h3>';
-  html += '<p>Jumlah baris agregat yang masuk dalam 30 hari terakhir: <strong>' + fmtBil(kea.masuk_30_hari) + '</strong>; 60 hari: <strong>' + fmtBil(kea.masuk_60_hari) + '</strong>; 90 hari: <strong>' + fmtBil(kea.masuk_90_hari) + '</strong>.</p>'
-    + '<p class="muted">Angka ini adalah hitungan baris agregat yang masuk — ukuran apakah pembinaan membentuk kebiasaan mencatat, bukan euforia awal.</p>';
-  html += '<h3>4. Omzet tercatat agregat</h3>';
+  bagian.push({judul:"Median skor per bulan (6 bulan terakhir)", isi:isiMedian});
+  bagian.push({judul:"Keaktifan mencatat",
+    isi:'<p>Jumlah baris agregat yang masuk dalam 30 hari terakhir: <strong>' + fmtHitungAgregat(kea.masuk_30_hari) + '</strong>; 60 hari: <strong>' + fmtHitungAgregat(kea.masuk_60_hari) + '</strong>; 90 hari: <strong>' + fmtHitungAgregat(kea.masuk_90_hari) + '</strong>.</p>'
+    + '<p class="muted">Angka ini adalah hitungan baris agregat yang masuk — ukuran apakah pembinaan membentuk kebiasaan mencatat, bukan euforia awal. Hitungan di bawah 5 tidak ditampilkan angkanya.</p>'});
+  var isiOmzet = "";
   if(kal && kal.n != null && kal.n >= AMBANG && kal.median_omzet != null){
-    html += '<p>Median omzet tercatat: <strong>' + fmtRp(kal.median_omzet) + '</strong> per bulan (dari ' + fmtBil(kal.n) + ' baris kalibrasi).</p>'
+    isiOmzet = '<p>Median omzet tercatat: <strong>' + fmtRp(kal.median_omzet) + '</strong> per bulan (dari ' + fmtBil(kal.n) + ' baris kalibrasi).</p>'
       + '<p class="muted">Angka ini adalah omzet yang tercatat di aplikasi, bukan klaim omzet seluruh daerah.</p>';
+  }else if(kal && kal.n != null){
+    isiOmzet = '<p>Belum cukup data (kurang dari 5 baris kalibrasi).</p>';
   }else{
-    html += '<p>Belum cukup data untuk kelompok ini.</p>';
+    isiOmzet = '<p>Belum ada data omzet tercatat untuk wilayah ini.</p>';
   }
-  html += '<h3>5. Kesenjangan yang menutup</h3>';
-  html += '<p>Belum ada data tren kesenjangan yang menutup untuk wilayah ini. Jenis kesenjangan yang paling banyak selesai per periode tampil setelah data kohort beberapa periode tersedia.</p>';
+  bagian.push({judul:"Omzet tercatat agregat", isi:isiOmzet});
+  var kes = Array.isArray(d.kesenjangan_menutup) ? d.kesenjangan_menutup : [];
+  if(kes.length){
+    bagian.push({judul:"Kesenjangan yang menutup",
+      isi:'<p>' + kes.map(function(k){ return (KEBUTUHAN_LABEL[k.jenis] || k.jenis) + ' berkurang ' + k.turun_persen + '%'; }).join('; ') + '.</p>'});
+  }
+  var html = "";
+  bagian.forEach(function(b, i){ html += '<h3>' + (i+1) + '. ' + b.judul + '</h3>' + b.isi; });
   box.innerHTML = html;
   catatLihatAgregat();
   return hasil;
@@ -765,8 +931,13 @@ async function renderPetaBatch(){
   }
   var adaError = hasilList.find(function(h){ return h && !h.ok; });
   if(adaError){
-    box.innerHTML = '<p class="muted">Peta belum bisa dimuat.</p>';
-    tampilPopup("Belum bisa memuat", pesanRamah(adaError.error));
+    if(adaError.ditolak){
+      box.innerHTML = '<p class="muted">Akses ke data wilayah ini tidak diizinkan.</p>';
+      tampilPopup("Akses tidak diizinkan", pesanRamah(adaError.error));
+    }else{
+      box.innerHTML = '<p class="muted">Peta belum bisa dimuat.</p>';
+      tampilPopup("Belum bisa memuat", pesanRamah(adaError.error));
+    }
     return adaError;
   }
   var html = '<div class="peta-grid">';
@@ -775,8 +946,9 @@ async function renderPetaBatch(){
   tampil.forEach(function(w, i){
     var d = hasilList[i] && hasilList[i].data;
     if(!d || (d.n || 0) < AMBANG){
-      html += '<div class="peta-sel kosong"><div class="w">' + esc(w.label) + '</div><div class="d">Belum cukup data</div></div>';
-      tabel += '<tr><td>' + esc(w.label) + '</td><td>Belum cukup data untuk kelompok ini</td></tr>';
+      var kosong = !d || (d.n || 0) === 0;
+      html += '<div class="peta-sel kosong"><div class="w">' + esc(w.label) + '</div><div class="d">' + (kosong ? "Belum ada data" : "Kurang dari 5 usaha") + '</div></div>';
+      tabel += '<tr><td>' + esc(w.label) + '</td><td>' + (kosong ? "Belum ada data untuk wilayah ini" : "Kurang dari 5 usaha") + '</td></tr>';
       return;
     }
     adaData = true;
@@ -823,13 +995,14 @@ async function muatSiap(){
   var hasil = await muatAgregat(S.provinsi, S.kota);
   if(!hasil.ok){
     if(hasil.setup){ box.innerHTML = pesanSetupHtml() + tombolContohHtml("siap"); }
+    else if(hasil.ditolak){ box.innerHTML = '<p class="muted">Akses ke data wilayah ini tidak diizinkan.</p>'; tampilPopup("Akses tidak diizinkan", pesanRamah(hasil.error)); }
     else { box.innerHTML = '<p class="muted">Kelompok siap investasi belum bisa dimuat.</p>'; tampilPopup("Belum bisa memuat", pesanRamah(hasil.error)); }
     return hasil;
   }
   var d = hasil.data;
   S.agregatTerakhir = d;
   if(!cukupData(d) || !d.siap_investasi){
-    box.innerHTML = tombolContohHtml("siap");
+    box.innerHTML = tombolContohHtml("siap", alasanKurangData(d));
     return hasil;
   }
   var j = d.siap_investasi.jumlah;
@@ -852,16 +1025,18 @@ async function muatLaporan(){
   var box = el("laporanIsi");
   el("contohLaporan").classList.add("hidden");
   box.innerHTML = '<p class="muted">Menyusun laporan triwulan…</p>';
+  aturTombolCetak(false);
   var hasil = await muatAgregat(S.provinsi, S.kota);
   if(!hasil.ok){
     if(hasil.setup){ box.innerHTML = pesanSetupHtml() + tombolContohHtml("laporan"); }
+    else if(hasil.ditolak){ box.innerHTML = '<p class="muted">Akses ke data wilayah ini tidak diizinkan.</p>'; tampilPopup("Akses tidak diizinkan", pesanRamah(hasil.error)); }
     else { box.innerHTML = '<p class="muted">Laporan belum bisa disusun.</p>'; tampilPopup("Belum bisa memuat", pesanRamah(hasil.error)); }
     return hasil;
   }
   var d = hasil.data;
   S.agregatTerakhir = d;
   if(!cukupData(d)){
-    box.innerHTML = tombolContohHtml("laporan");
+    box.innerHTML = tombolContohHtml("laporan", alasanKurangData(d));
     return hasil;
   }
   var med = d.median || {};
@@ -872,7 +1047,9 @@ async function muatLaporan(){
   var kalimatTren = tren.length >= 2
     ? "Median skor kesehatan kohort bergerak dari " + fmtSkor(tren[0].median_kesehatan) + " menjadi " + fmtSkor(tren[tren.length-1].median_kesehatan) + " selama " + tren.length + " bulan terakhir."
     : "Belum ada data tren yang cukup untuk wilayah ini.";
-  box.innerHTML = '<h3>Ringkasan untuk pimpinan — ' + esc(labelWilayah()) + '</h3>'
+  box.innerHTML = '<p><strong>Periode:</strong> ' + esc(periodeTriwulan()) + '</p>'
+    + '<p><strong>Tanggal laporan dibuat:</strong> ' + esc(tanggalLaporan()) + '</p>'
+    + '<h3>Ringkasan untuk pimpinan — ' + esc(labelWilayah()) + '</h3>'
     + '<p>Di wilayah ini, <strong>' + fmtBil(d.n) + ' UMKM</strong> aktif mencatat. Median skor kesehatan usaha <strong>' + fmtSkor(med.kesehatan) + '</strong>, median Skor Siap Investasi <strong>' + fmtSkor(med.siap_investasi) + '</strong>, dan median skor konsistensi <strong>' + fmtSkor(med.konsistensi) + '</strong>.</p>'
     + '<p style="margin-top:8px">' + esc(kalimatTren) + '</p>'
     + '<p style="margin-top:8px">Kebutuhan dominan di wilayah ini adalah <strong>' + esc(KEBUTUHAN_LABEL[dom] || "belum dapat ditentukan") + '</strong>'
@@ -882,6 +1059,7 @@ async function muatLaporan(){
         : 'Kelompok siap investasi belum dapat dihitung untuk wilayah ini.') + '</p>'
     + '<p class="muted" style="margin-top:10px">Laporan ini hanya berisi angka agregat. Tidak ada nama usaha, kontak, atau data satu usaha pun di dalamnya.</p>';
   catatLihatAgregat();
+  aturTombolCetak(true);
   return hasil;
 }
 function renderContohLaporan(){
@@ -892,6 +1070,12 @@ function renderContohLaporan(){
   el("contohLaporan").classList.remove("hidden");
 }
 async function cetakLaporan(){
+  /* U-B31: laporan kosong tidak boleh dicetak dan tidak boleh dicatat
+     sebagai ekspor — tombolnya nonaktif sampai laporan nyata tersusun. */
+  if(!S.laporanSiap){
+    tampilPopup("Belum ada laporan", "Pilih wilayah dan tampilkan laporan dulu.");
+    return {ok:false, kosong:true};
+  }
   await catatLog("ekspor_laporan", "Laporan triwulan — " + labelWilayah());
   if(typeof window.print === "function"){ try{ window.print(); }catch(e){} }
   return {ok:true};
@@ -910,6 +1094,13 @@ function tutupContoh(layar){
   if(box){ box.classList.add("hidden"); box.innerHTML = ""; }
 }
 async function muatLayarAktif(){
+  /* S-B16: periksa ulang izin setiap kali layar penting dimuat — akses
+     yang dicabut sesudah masuk harus ketahuan di sini, bukan dibiarkan
+     membaca data. */
+  if(S.email && S.peran){
+    var boleh = await periksaAksesUlang();
+    if(!boleh) return {ok:false, ditolak:true};
+  }
   if(S.layar === "ringkasan") return muatRingkasan();
   if(S.layar === "tren") return muatTren();
   if(S.layar === "peta") return muatPeta();
@@ -917,8 +1108,33 @@ async function muatLayarAktif(){
   if(S.layar === "laporan") return muatLaporan();
   return {ok:false};
 }
+/* Pemeriksaan ulang akses (S-B16). true = lanjut memuat; false = akses
+   sudah tidak aktif, pengguna sudah diberi pesan jelas dan dikeluarkan.
+   Galat setup (cloud belum siap / tidak bisa terhubung) TIDAK mengusir
+   pengguna — pemuat layar yang memberi pesannya sendiri. */
+async function periksaAksesUlang(){
+  var c = getClient();
+  if(!c) return true;
+  var akses;
+  try{ akses = await periksaAkses(S.email); }
+  catch(e){ return true; }
+  if(!akses) return true;
+  if(akses.ok){
+    S.peran = akses.peran;
+    S.provinsiTugas = akses.provinsi || null;
+    S.kotaTugas = akses.kota || null;
+    return true;
+  }
+  if(akses.alasan === "tidak-terdaftar"){
+    tampilPopup("Akses tidak aktif", "Akses Anda ke Dashboard Pemda sudah tidak aktif.\nHubungi pemilik aplikasi bila Anda merasa ini keliru.");
+    await keluar();
+    return false;
+  }
+  return true;
+}
 
 /* ===== Init & event ===== */
+function hashParam(k){ try{ return new URLSearchParams(String(window.location.hash||"").replace(/^#/,"")).get(k); }catch(e){ return null; } }
 function bindEvents(){
   el("btnPopupTutup").addEventListener("click", tutupPopup);
   el("popupOverlay").addEventListener("click", function(e){ if(e.target === el("popupOverlay")) tutupPopup(); });
@@ -929,8 +1145,11 @@ function bindEvents(){
   el("btnKeLupa").addEventListener("click", function(){ tampilPanel("panelLupa"); });
   el("btnBatalLupa").addEventListener("click", function(){ tampilPanel("panelMasuk"); });
   el("btnKirimLupa").addEventListener("click", async function(){ await lupaSandi(el("emailLupa").value); });
+  el("btnSimpanSandi").addEventListener("click", async function(){ await simpanSandiBaru(el("sandiBaru").value, el("sandiBaru2").value); });
+  el("btnBatalSandiBaru").addEventListener("click", function(){ tampilPanel("panelMasuk"); });
   el("btnKeluar").addEventListener("click", keluar);
-  el("selProvinsi").addEventListener("change", function(){ S.provinsi = el("selProvinsi").value; S.kota = ""; isiKota(); });
+  el("selProvinsi").addEventListener("change", function(){ S.provinsi = el("selProvinsi").value; S.kota = ""; isiKota(); aturTombolCetak(false); });
+  el("selKota").addEventListener("change", function(){ S.kota = el("selKota").value; aturTombolCetak(false); });
   el("btnMuatWilayah").addEventListener("click", async function(){ bacaWilayahTerpilih(); await muatLayarAktif(); });
   document.querySelectorAll("#tabbar button").forEach(function(b){
     b.addEventListener("click", async function(){
@@ -958,6 +1177,20 @@ function bindEvents(){
 }
 async function init(){
   bindEvents();
+  /* Tautan atur ulang kata sandi dari email membuka aplikasi ini dengan
+     hash type=recovery — tampilkan layar "Buat kata sandi baru", bukan
+     layar Masuk biasa. Tautan yang sudah tidak berlaku membawa error
+     di hash — beri tahu dengan jujur dan arahkan ke panel "Lupa kata
+     sandi?" supaya pengguna bisa meminta tautan baru. */
+  if(hashParam("type") === "recovery"){
+    tampilPanel("panelSandiBaru");
+    return;
+  }
+  if(hashParam("error_code") || hashParam("error")){
+    tampilPanel("panelLupa");
+    tampilPopup("Tautan sudah kedaluwarsa","Tautan sudah kedaluwarsa — minta tautan baru lewat 'Lupa kata sandi?'.");
+    return;
+  }
   isiProvinsi();
   var c = getClient();
   if(c && c.auth && c.auth.getSession){
@@ -977,18 +1210,22 @@ window.__pemda = {
   WILAYAH:WILAYAH, CONTOH:CONTOH,
   setClient:function(m){ __client = m; },
   getClient:getClient,
-  masuk:masuk, daftar:daftar, lupaSandi:lupaSandi, keluar:keluar,
+  masuk:masuk, daftar:daftar, lupaSandi:lupaSandi, simpanSandiBaru:simpanSandiBaru, keluar:keluar,
   kodeMarketingBersih:kodeMarketingBersih, cekKodeMarketing:cekKodeMarketing,
   periksaAkses:periksaAkses, sesudahMasuk:sesudahMasuk,
   catatLog:catatLog, catatLihatAgregat:catatLihatAgregat,
   muatAgregat:muatAgregat, muatRingkasan:muatRingkasan, muatTren:muatTren,
+  muatLayarAktif:muatLayarAktif, periksaAksesUlang:periksaAksesUlang,
   muatPeta:muatPeta, renderPetaBatch:renderPetaBatch, muatSiap:muatSiap,
   muatLaporan:muatLaporan, cetakLaporan:cetakLaporan,
   tampilContoh:tampilContoh, tutupContoh:tutupContoh,
   tampilLayar:tampilLayar, tampilDashboard:tampilDashboard,
   isiProvinsi:isiProvinsi, isiKota:isiKota, bacaWilayahTerpilih:bacaWilayahTerpilih,
   tampilPopup:tampilPopup, tutupPopup:tutupPopup, cukupData:cukupData,
-  apakahErrorSetup:apakahErrorSetup, normalisasiData:normalisasiData
+  apakahErrorSetup:apakahErrorSetup, apakahErrorAkses:apakahErrorAkses, normalisasiData:normalisasiData,
+  periodeTriwulan:periodeTriwulan, tanggalLaporan:tanggalLaporan,
+  aturTombolCetak:aturTombolCetak, fmtHitungAgregat:fmtHitungAgregat,
+  tampilPanduanAwal:tampilPanduanAwal
 };
 </script>
 <script>
@@ -997,9 +1234,9 @@ window.__pemda = {
    SATU pendengar klik terdelegasi (capture): tombol navigasi/penjelajahan
    yang diketuk mendapat kelas .sudah-diklik dan warnanya berubah jadi emas
    — tetap emas sampai kapan pun, supaya terlihat mana yang sudah pernah
-   ditekan. Aksi sekali pakai (Masuk/Daftar/Kirim tautan/Keluar/Tampilkan/
-   Muat lebih banyak/Cetak laporan/Mengerti) TIDAK pernah mendapat kelas
-   ini — mereka hanya mendapat umpan-balik tekan sesaat (:active di CSS),
+   ditekan. Aksi sekali pakai (Masuk/Daftar/Kirim tautan/Simpan kata sandi
+   baru/Keluar/Tampilkan/Muat lebih banyak/Cetak laporan/Mengerti) TIDAK
+   pernah mendapat kelas ini — mereka hanya mendapat umpan-balik tekan
    karena sesudah aksi popup tertutup, layar berganti, atau laporan dicetak.
    Keadaan semantik SELALU menang: tombol dengan aria-pressed="true" tidak
    pernah ditandai, dan tab yang sedang aktif (.aktif) sudah emas dari
